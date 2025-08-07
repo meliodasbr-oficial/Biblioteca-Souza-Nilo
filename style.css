@@ -1,0 +1,150 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background-color: white;
+  color: #001f3f;
+  position: relative;
+  min-height: 100vh;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  top: 200px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: url('souzanilologo.png');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 300px auto;
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 0;
+}
+
+header {
+  position: relative;
+  z-index: 2;
+  background-color: #001f3f;
+  text-align: center;
+  padding: 20px 0;
+  color: white;
+}
+
+.container {
+  position: relative;
+  z-index: 1;
+  padding: 20px;
+  max-width: 900px;
+  margin: auto;
+}
+
+#btn-login {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background-color: #ff4136;
+  border: none;
+  padding: 8px 16px;
+  color: white;
+  font-weight: bold;
+  font-family: "Playwrite AU NSW", cursive;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
+}
+
+#btn-login:hover {
+  background-color: #e03a2f;
+}
+
+.logo-insigna {
+  -webkit-user-drag: none;
+  user-select: none;
+  width: 120px;
+  height: auto;
+}
+
+.img {
+  width: 100px;
+}
+
+.titulo-escola {
+  font-family: "Playwrite AU NSW", cursive;
+  font-weight: 600;
+  font-style: italic;
+  color: #ff4136;
+  margin-top: 5px;
+  font-size: x-large;
+}
+
+.container {
+  padding: 20px;
+  max-width: 900px;
+  margin: auto;
+}
+
+.campo-pesquisa {
+  width: 80%;
+  padding: 10px;
+  font-size: 16px;
+  margin-bottom: 30px;
+  border: 2px solid #001f3f;
+  border-radius: 5px;
+  color: #001f3f;
+}
+
+.campo-pesquisa::placeholder {
+  color: #aaa;
+}
+
+.titulo-genero {
+  margin-top: 40px;
+  margin-bottom: 10px;
+  color: #001f3f; /* Azul marinho */
+  font-weight: bold;
+  font-size: 22px;
+}
+
+.livros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.livro-card {
+  background-color: white;
+  padding: 15px;
+  width: 150px;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 31, 63, 0.2);
+  text-align: center;
+  border: 1px solid #ff4136;
+  transition: transform 0.2s ease;
+}
+
+.livro-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 12px rgba(255, 65, 54, 0.4);
+}
+
+.livro-card img {
+  width: 100%;
+  height: auto;
+  margin-bottom: 10px;
+  border-radius: 4px;
+  border: 1px solid #001f3f;
+}
+
+.livro-card h3 {
+  font-size: 16px;
+  margin: 5px 0;
+  color: #001f3f;
+}
+
+.livro-card p {
+  font-size: 14px;
+  margin: 2px 0;
+  color: #001f3f;
+}

@@ -1,0 +1,66 @@
+.painel-bg {
+  background: linear-gradient(to bottom right, #001f3f, #ff0000);
+  min-height: 100vh;
+  margin: 0;
+  font-family: Arial, sans-serif;
+  color: white;
+}
+
+.logo-escola {
+  max-width: 100px;
+  height: auto;
+  margin-bottom: 10px;
+}
+
+h1{
+    font-size: x-large;
+}
+
+.painel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  background-color: rgba(0, 0, 0, 0.4);
+  position: sticky;
+  top: 0;
+}
+
+.logout-btn {
+  padding: 15px 25px;
+  background-color: #ff4444;
+  border: none;
+  border-radius: 6px;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: medium;
+}
+
+.logout-btn:hover {
+  background-color: #cc0000;
+}
+
+.painel-conteudo {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+  padding: 40px;
+}
+
+.card {
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 2px solid white;
+  border-radius: 10px;
+  padding: 30px;
+  text-align: center;
+  font-size: 18px;
+  font-weight: bold;
+  backdrop-filter: blur(4px);
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.card:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
