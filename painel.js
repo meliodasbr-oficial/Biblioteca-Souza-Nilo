@@ -192,7 +192,7 @@ function criarTabelaLivros(livros, tipoCard) {
 
   const thead = document.createElement("thead");
   const trHead = document.createElement("tr");
-  ["Nome", "Autor", "Gênero", "Quantidade", "Volume", ""].forEach(texto => {
+  ["Nome", "Autor", "Gênero", "Quantidade", "Volume", "Prateleira", ""].forEach(texto => {
     const th = document.createElement("th");
     th.textContent = texto;
     th.style.borderBottom = "2px solid #ff4444";
@@ -209,7 +209,7 @@ function criarTabelaLivros(livros, tipoCard) {
     const tr = document.createElement("tr");
     tr.style.borderBottom = "1px solid #444";
 
-    ["nome", "autor", "genero", "quantidade", "volume"].forEach(campo => {
+    ["nome", "autor", "genero", "quantidade", "volume", "prateleira"].forEach(campo => {
       const td = document.createElement("td");
       td.textContent = livro[campo] || (campo === "volume" ? "1" : "");
       td.style.padding = "8px";
@@ -338,26 +338,35 @@ async function carregarGeneros() {
     btnExcluir.style.display = "none";
 
     btnExcluir.addEventListener("click", async (e) => {
-      e.stopPropagation();
+  e.stopPropagation();
+  const confirmar = confirm(`Deseja excluir o gênero "${genero.nome}"? Isso também removerá todos os livros associados.`);
+  if (!confirmar) return;
 
-      const confirmar = confirm(`Deseja excluir o gênero "${genero.nome}"? Isso removerá também todos os livros deste gênero!`);
-      if (!confirmar) return;
+  try {
+    // Remove os livros da subcoleção do gênero
+    const generoRef = collection(db, genero.nome);
+    const livrosSnap = await getDocs(generoRef);
+    const promGen = livrosSnap.docs.map(doc => deleteDoc(doc.ref));
+    await Promise.all(promGen);
 
-      try {
-        const generoRef = collection(db, genero.nome);
-        const livrosSnap = await getDocs(generoRef);
-        const promises = livrosSnap.docs.map(doc => deleteDoc(doc.ref));
-        await Promise.all(promises);
+    // Remove os livros da coleção principal "livros"
+    const livrosRef = collection(db, "livros");
+    const q = query(livrosRef, where("genero", "==", genero.nome));
+    const snapLivros = await getDocs(q);
+    const promLivros = snapLivros.docs.map(doc => deleteDoc(doc.ref));
+    await Promise.all(promLivros);
 
-        await deleteDoc(doc(db, "generos", genero.id));
+    // Por fim, remove o documento do gênero
+    await deleteDoc(doc(db, "generos", genero.id));
 
-        showToast(`Gênero "${genero.nome}" foi removido com sucesso!`, "success");
-        carregarGeneros();
-        carregarLivros();
-      } catch (err) {
-        showToast("Erro ao remover gênero: " + err.message, "error");
-      }
-    });
+    showToast(`Gênero "${genero.nome}" e livros relacionados foram removidos!`, "success");
+    carregarGeneros();
+    carregarLivros();
+  } catch (err) {
+    showToast("Erro ao remover gênero e livros: " + err.message, "error");
+  }
+});
+
 
     div.appendChild(spanNome);
     div.appendChild(btnExcluir);
@@ -441,6 +450,8 @@ document.getElementById("form-registrar-livro").addEventListener("submit", async
   const genero = inputGeneroLivro.value.trim();
   const quantidade = Number(document.getElementById("quantidadeLivro").value);
   const volume = document.getElementById("volumeLivro")?.value.trim() || "1";
+  const prateleira = document.getElementById("numeroPrateleira").value.trim();
+
 
   if (!nome || !autor || !genero || quantidade <= 0) {
     showToast("Preencha todos os campos corretamente.", "warning");
@@ -457,7 +468,7 @@ document.getElementById("form-registrar-livro").addEventListener("submit", async
     return;
   }
 
-  const livroData = { nome, autor, genero, quantidade, volume };
+  const livroData = { nome, autor, genero, quantidade, volume, prateleira };
 
   try {
     await salvarLivro(livroData);
@@ -496,6 +507,41 @@ document.getElementById("form-criar-genero").addEventListener("submit", async (e
   }
 });
 
+// ======= FILTRO DE PESQUISA DE LIVROS =======
+document.querySelectorAll(".livros-pesquisa").forEach(input => {
+  input.addEventListener("input", async (e) => {
+    const termo = normalizarTexto(e.target.value);
+
+    const snapshot = await getDocs(collection(db, "livros"));
+    const livros = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
+
+    const filtrados = livros.filter(livro => {
+      const nome = normalizarTexto(livro.nome);
+      const autor = normalizarTexto(livro.autor);
+      const genero = normalizarTexto(livro.genero);
+      const prateleira = normalizarTexto(livro.prateleira || "");
+      const volume = normalizarTexto(livro.volume || "1");
+
+      return (
+        nome.includes(termo) ||
+        autor.includes(termo) ||
+        genero.includes(termo) ||
+        prateleira.includes(termo) ||
+        volume.includes(termo)
+      );
+    });
+
+    const parentSection = e.target.closest(".livros-section");
+    if (parentSection.id === "secao-livros-registrados") {
+      exibirLivrosRegistrados(filtrados);
+    } else if (parentSection.id === "secao-remover-livros") {
+      exibirLivrosRemover(filtrados);
+    }
+  });
+});
+
+
 // ======= CARREGAMENTO INICIAL =======
 carregarGeneros();
 carregarLivros();
+
