@@ -3,23 +3,109 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="shortcut icon" href="souzanilologo.png" type="souzanilologo" />
   <title>Central Bibliotecário</title>
   <link rel="stylesheet" href="painel.css" />
 </head>
 <body class="painel-bg">
   <header class="painel-header">
     <img src="souzanilologo.png" alt="" class="logo-escola" draggable="false" />
-    <h1>Central Bibliotecário</h1>
+    <h1>Central Bibliotecário(a)</h1>
     <button id="logoutBtn" class="logout-btn">Logout</button>
   </header>
 
   <main class="painel-conteudo">
-    <div class="card">📚 Registrar Livro</div>
-    <div class="card">🗑️ Remover Livro</div>
-    <div class="card">📖 Livros Registrados</div>
-    <div class="card">📂 Criar Gênero</div>
-    <div class="card">⚙️ Outras Funções</div>
+    <div class="card" id="card-livros">📖 Livros Registrados</div>
+    <div class="card" id="card-registrar">📚 Registrar Livro</div>
+    <div class="card" id="card-remover">🗑️ Remover Livro</div>
+    <div class="card" id="card-criar">📂 Criar Gênero</div>
   </main>
+
+  <section class="livros-section" id="secao-livros-registrados" style="display: none;">
+    <div class="livros-card">
+      <div class="livros-topo">
+        <input type="text" placeholder="Pesquisar livros..." class="livros-pesquisa" />
+      </div>
+      <div class="livros-lista" id="lista-livros-registrados">
+        <p class="sem-livros">Nenhum livro registrado.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="livros-section" id="secao-registrar-livro" style="display: none;">
+    <div class="livros-card">
+      <h2>Registrar Novo Livro</h2>
+      <form id="form-registrar-livro">
+        <label>Nome:<br />
+          <input type="text" id="nomeLivro" required placeholder="Nome" />
+        </label>
+
+        <label>Autor:<br />
+          <input type="text" id="autorLivro" required placeholder="Autor" />
+        </label>
+
+        <label>Gênero: <span style="color:#ff4444">*</span><br />
+          <input type="text" id="generoLivro" readonly placeholder="Clique para selecionar o gênero" required />
+        </label>
+        
+<!-- Modal minimalista de gênero -->
+<div id="modalGenero" style="display:none;">
+  <div class="modal-conteudo">
+    <button id="fecharModalGenero" aria-label="Fechar">&times;</button>
+    <h3>Selecione um gênero</h3>
+    <ul id="listaGenerosModal"></ul>
+  </div>
+</div>
+  
+        <label>Volume (opcional):<br />
+          <input type="text" id="volumeLivro" placeholder="Deixe vazio se não houver" />
+        </label>
+
+        <label>Quantidade:<br />
+          <input type="number" id="quantidadeLivro" required min="1" value="1" />
+        </label>
+
+        <div style="margin-top: 20px; display: flex; gap: 10px;">
+          <button type="submit">Registrar</button>
+          <button type="button" id="btn-cancelar-registrar">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <section class="livros-section" id="secao-remover-livros" style="display: none;">
+    <div class="livros-card">
+      <div class="livros-topo">
+        <input type="text" placeholder="Pesquisar livros..." class="livros-pesquisa" />
+      </div>
+      <div class="livros-lista" id="lista-livros-remover">
+        <p class="sem-livros">Nenhum livro disponível para remoção.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="livros-section" id="secao-criar-genero" style="display: none;">
+    <div class="livros-card">
+      <h2>Criar Novo Gênero</h2>
+      <form id="form-criar-genero">
+        <label for="inputNovoGenero">Novo Gênero:</label><br />
+        <input type="text" id="inputNovoGenero" placeholder="Digite o nome do gênero" required />
+        <div style="margin-top: 10px; display: flex; gap: 10px;">
+          <button type="submit">Adicionar</button>
+          <button type="button" id="btn-cancelar-genero">Cancelar</button>
+        </div>
+      </form>
+
+      <hr style="margin: 20px 0;" />
+
+      <h3>Gêneros Cadastrados</h3>
+      <div id="lista-generos" class="livros-lista">
+        <p class="sem-livros">Nenhum gênero registrado.</p>
+      </div>
+    </div>
+  </section>
+
+  <div id="toast-container" class="toast-container"></div>
 
   <script type="module" src="painel.js"></script>
 </body>
