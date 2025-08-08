@@ -1,125 +1,48 @@
-<!DOCTYPE html> 
-<html lang="pt-br"> 
-<head> 
-  <meta charset="UTF-8" /> 
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/> 
-  <link rel="shortcut icon" href="souzanilologo.png" type="souzanilologo"> 
-  <title>Biblioteca Souza Nilo</title> 
-  <link rel="preconnect" href="https://fonts.googleapis.com"> 
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin> 
-  <link href="https://fonts.googleapis.com/css2?family=Playwrite+AU+NSW:wght@100..400&display=swap" rel="stylesheet"> 
-  <link rel="stylesheet" href="style.css"> 
-</head> 
-<body> 
-  <header> 
-    <img src="souzanilologo.png" alt="" class="logo-insigna" draggable="false"> 
-    <div class="titulo-escola">Escola Estadual Professor Souza Nilo</div> 
-    <button id="btn-login">Login</button> 
-  </header> 
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="shortcut icon" href="souzanilologo.png" type="souzanilologo">
+  <title>Biblioteca Souza Nilo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playwrite+AU+NSW:wght@100..400&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <img src="souzanilologo.png" alt="" class="logo-insigna" draggable="false">
+    <div class="titulo-escola">Escola Estadual Professor Souza Nilo</div>
+    <button id="btn-login">Login</button>
+  </header>
 
-  <div class="container"> 
-    <input type="text" class="campo-pesquisa" id="pesquisa" placeholder="Pesquisar livros..."> 
-    <div id="lista-livros"></div> 
-  </div> 
+  <div class="container">
+    <input type="text" class="campo-pesquisa" id="pesquisa" placeholder="Pesquisar livros...">
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    <div class="livros" id="lista-livros">
+      <div class="livro-card">
+        <h3>Dom Casmurro</h3>
+        <p>Machado de Assis</p>
+        <p>Disponíveis: 4</p>
+      </div>
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyDsDQ8AzInwgdA8gO9XOTIiqVUtOH5FYNQ",
-      authDomain: "biblioteca-souza-nilo.firebaseapp.com",
-      projectId: "biblioteca-souza-nilo",
-      storageBucket: "biblioteca-souza-nilo.firebasestorage.app",
-      messagingSenderId: "927105626349",
-      appId: "1:927105626349:web:58b89b3fc32438bdde1ce4",
-      measurementId: "G-HYC39S6B8W"
-    };
+      <div class="livro-card">
+        <h3>O Pequeno Príncipe</h3>
+        <p>Antoine de Saint-Exupéry</p>
+        <p>Disponíveis: 2</p>
+      </div>
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+      <div class="livro-card">
+        <h3>A Hora da Estrela</h3>
+        <p>Clarice Lispector</p>
+        <p>Disponíveis: 1</p>
+      </div>
+    </div>
+  </div>
 
-    document.getElementById("btn-login").addEventListener("click", () => {
-      window.location.href = "login.html";
-    });
-
-    function agruparPorGenero(livros) {
-      const agrupado = {};
-      livros.forEach(livro => {
-        const genero = livro.genero || "Gênero Não Informado";
-        if (!agrupado[genero]) agrupado[genero] = [];
-        agrupado[genero].push(livro);
-      });
-      return agrupado;
-    }
-
-    function exibirLivrosAgrupados(livrosPorGenero) {
-      const listaLivros = document.getElementById("lista-livros");
-      listaLivros.innerHTML = "";
-
-      for (const genero in livrosPorGenero) {
-        const secaoGenero = document.createElement("div");
-        secaoGenero.classList.add("genero");
-
-        const tituloGenero = document.createElement("div");
-        tituloGenero.classList.add("titulo-genero");
-        tituloGenero.textContent = genero;
-
-        const livrosContainer = document.createElement("div");
-        livrosContainer.classList.add("livros");
-
-        livrosPorGenero[genero].forEach(livro => {
-          const card = document.createElement("div");
-          card.classList.add("livro-card");
-
-          card.innerHTML = `
-            <h3>${livro.nome}</h3>
-            <p><strong>Autor:</strong> ${livro.autor}</p>
-            <p><strong>Volume:</strong> ${livro.volume || "-"}</p>
-            <p><strong>Prateleira:</strong> ${livro.prateleira || "-"}</p>
-            <p><strong>Disponível:</strong> ${livro.quantidade || 0}</p>
-          `;
-
-          livrosContainer.appendChild(card);
-        });
-
-        secaoGenero.appendChild(tituloGenero);
-        secaoGenero.appendChild(livrosContainer);
-        listaLivros.appendChild(secaoGenero);
-      }
-    }
-
-    async function carregarLivros() {
-      const livrosSnap = await getDocs(collection(db, "livros"));
-      const livros = livrosSnap.docs.map(doc => doc.data());
-      const agrupado = agruparPorGenero(livros);
-      exibirLivrosAgrupados(agrupado);
-    }
-
-    carregarLivros();
-
-    document.getElementById("pesquisa").addEventListener("input", function () {
-      const termo = this.value.toLowerCase();
-      const generos = document.querySelectorAll(".genero");
-
-      generos.forEach(genero => {
-        let temCorrespondencia = false;
-        const tituloGenero = genero.querySelector(".titulo-genero");
-        const livros = genero.querySelectorAll(".livro-card");
-
-        livros.forEach(livro => {
-          const texto = livro.textContent.toLowerCase();
-          if (texto.includes(termo)) {
-            livro.style.display = "block";
-            temCorrespondencia = true;
-          } else {
-            livro.style.display = "none";
-          }
-        });
-
-        tituloGenero.style.display = temCorrespondencia ? "block" : "none";
-      });
-    });
-  </script>
-</body> 
+  <script src="script.js"></script>
+</body>
 </html>
+
