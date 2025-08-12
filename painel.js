@@ -276,6 +276,7 @@ function criarTabelaLivros(livros, tipoCard) {
 async function carregarLivros() {
   const snapshot = await getDocs(collection(db, "livros"));
   const livros = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
+  livros.sort((a, b) => a.nome.localeCompare(b.nome, 'pt', { sensitivity: 'base' }));
 
   exibirLivrosRegistrados(livros);
   exibirLivrosRemover(livros);
@@ -544,4 +545,5 @@ document.querySelectorAll(".livros-pesquisa").forEach(input => {
 // ======= CARREGAMENTO INICIAL =======
 carregarGeneros();
 carregarLivros();
+
 
