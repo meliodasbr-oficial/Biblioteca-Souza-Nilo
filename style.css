@@ -51,6 +51,25 @@ header {
   background-color: #e03a2f;
 }
 
+#btn-login-leitor {
+  position: absolute;
+  top: 70px;
+  right: 20px;
+  background-color: #ff4136;
+  border: none;
+  padding: 8px 16px;
+  color: white;
+  font-weight: bold;
+  font-family: "Playwrite AU NSW", cursive;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
+}
+
+#btn-login-leitor:hover {
+  background-color: #e03a2f;
+}
+
 .logo-insigna {
   -webkit-user-drag: none;
   user-select: none;

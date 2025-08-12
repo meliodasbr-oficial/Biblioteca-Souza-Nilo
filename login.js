@@ -1,5 +1,11 @@
 import { auth } from "./firebase.js";
-import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
+import { signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
+
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    window.location.href = "painel-bibliotecario.html";
+  }
+});
 
 document.getElementById("loginForm").addEventListener("submit", function(event) {
   event.preventDefault();

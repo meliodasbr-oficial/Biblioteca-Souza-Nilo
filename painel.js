@@ -30,6 +30,17 @@ onAuthStateChanged(auth, (user) => {
   }
 });
 
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    const email = user.email;
+    const emailCurto = email.length > 14 ? email.slice(0, 14) + "..." : email;
+    document.getElementById("user-email").textContent = `Logado como: ${emailCurto}`;
+  } else {
+    window.location.href = "login.html";
+  }
+});
+
+
 document.getElementById("logoutBtn").addEventListener("click", () => {
   signOut(auth)
     .then(() => location.replace("login.html"))
@@ -57,12 +68,8 @@ function showToast(message, type = "success", duration = 5000) {
   `;
 
   toastContainer.appendChild(toast);
-
-  // Animação da barra de duração
   const durationBar = toast.querySelector(".duration-bar");
   durationBar.style.animation = `durationBarAnim ${duration}ms linear forwards`;
-
-  // Após o tempo, anima saída e remove toast
   setTimeout(() => {
     toast.style.animation = "slideOutToast 0.5s forwards";
     toast.addEventListener("animationend", () => {
@@ -152,12 +159,8 @@ async function livroExiste(nome, autor, volume) {
 async function salvarLivro(livroData) {
   const { nome, autor, genero } = livroData;
   const dataHora = new Date().toISOString();
-
-  // Salva na coleção "livros"
   const proxIdLivros = await gerarProximoIdSequencial("livros");
   await setDoc(doc(db, "livros", proxIdLivros), { ...livroData, registradoEm: dataHora });
-
-  // Salva na coleção do gênero
   const proxIdGenero = await gerarProximoIdSequencial(genero);
   await setDoc(doc(db, genero, proxIdGenero), { ...livroData, registradoEm: dataHora });
 }
@@ -289,7 +292,6 @@ function exibirLivrosRegistrados(livros) {
     container.innerHTML = `<p class="sem-livros">Nenhum livro registrado.</p>`;
     return;
   }
-  // Aqui não mostra botão editar, só lista
   const tabela = criarTabelaLivros(livros, "registrados");
   container.appendChild(tabela);
 }
@@ -344,20 +346,15 @@ async function carregarGeneros() {
   if (!confirmar) return;
 
   try {
-    // Remove os livros da subcoleção do gênero
     const generoRef = collection(db, genero.nome);
     const livrosSnap = await getDocs(generoRef);
     const promGen = livrosSnap.docs.map(doc => deleteDoc(doc.ref));
     await Promise.all(promGen);
-
-    // Remove os livros da coleção principal "livros"
     const livrosRef = collection(db, "livros");
     const q = query(livrosRef, where("genero", "==", genero.nome));
     const snapLivros = await getDocs(q);
     const promLivros = snapLivros.docs.map(doc => deleteDoc(doc.ref));
     await Promise.all(promLivros);
-
-    // Por fim, remove o documento do gênero
     await deleteDoc(doc(db, "generos", genero.id));
 
     showToast(`Gênero "${genero.nome}" e livros relacionados foram removidos!`, "success");
@@ -540,7 +537,6 @@ document.querySelectorAll(".livros-pesquisa").forEach(input => {
     }
   });
 });
-
 
 // ======= CARREGAMENTO INICIAL =======
 carregarGeneros();

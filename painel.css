@@ -1,4 +1,3 @@
-/* Scrollbar padrão */
 html::-webkit-scrollbar {
   width: 12px;
 }
@@ -24,7 +23,6 @@ html {
   scrollbar-color: #ff4444 #0b1a40;
 }
 
-/* Background e base */
 .painel-bg {
   background: linear-gradient(to bottom right, #00173f, #b00000);
   min-height: 100vh;
@@ -44,16 +42,23 @@ h1 {
   margin: 15px;
 }
 
+@media (max-width: 600px) {
+  h1 {
+    font-size: 16px;
+  }
+}
+
+
 .painel-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 15px;
+  padding: 3px;
   background-color: rgba(0, 0, 0, 0.4);
 }
 
 .logout-btn {
-  padding: 12px 22px;
+  padding: 10px 14px;
   background-color: #ff4444;
   border: none;
   border-radius: 6px;
@@ -62,6 +67,8 @@ h1 {
   cursor: pointer;
   font-size: medium;
   transition: background-color 0.3s;
+  right: 8px;
+  position: sticky;
 }
 
 .logout-btn:hover {
@@ -93,7 +100,6 @@ h1 {
   background-color: rgba(255, 255, 255, 0.25);
 }
 
-/* Estilo dos cards de livros */
 .livros-section {
   padding: 30px 20px;
 }
@@ -493,4 +499,24 @@ h1 {
 
 .btn-remover:hover {
   background-color: #c9302c;
+}
+
+.titulo-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.user-email {
+  font-weight: bold;
+  color: white;
+  background: #003366;
+  padding: 4px 8px;
+  border-radius: 5px;
+  font-size: 13px;
+  margin-top: 4px;
+  text-align: center;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
 }

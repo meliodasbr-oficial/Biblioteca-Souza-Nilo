@@ -25,6 +25,9 @@ const inputPesquisa = document.getElementById("pesquisa");
 document.getElementById("btn-login").addEventListener("click", () => {
   window.location.href = "login.html";
 });
+document.getElementById("btn-login-leitor").addEventListener("click", () => {
+  window.location.href = "login-leitor.html";
+});
 
 const livrosPorGenero = {};
 let generoSelecionado = "Todos";
