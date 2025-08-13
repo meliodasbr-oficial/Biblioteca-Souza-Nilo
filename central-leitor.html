@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="shortcut icon" href="souzanilologo.png" type="souzanilologo" />
+  <title>Central Bibliotecário</title>
+  <link rel="stylesheet" href="painel.css" />
+</head>
+<body class="painel-bg">
+  <header class="painel-header">
+    <img src="souzanilologo.png" alt="" class="logo-escola" draggable="false" />
+    <div class="titulo-container">
+      <h1>Central Bibliotecário(a)</h1>
+      <span id="user-email" class="user-email"></span>
+    </div>
+    <button id="logoutBtn" class="logout-btn">Sair</button>
+  </header>
+
+  <main class="painel-conteudo">
+    <div class="card" id="card-ranking">📖 Ranking Leitor</div>
+    <div class="card" id="card-livros">Livros</div>
+    <div class="card" id="card-pendentes">Livros Pendentes</div>
+    <div class="card" id="card-desejos">Lista de Desejos</div>
+  </main>
+
+  <section class="livros-section" id="secao-livros" style="display: none;">
+    <div class="livros-card">
+      <div class="livros-topo">
+        <input type="text" placeholder="Pesquisar livros..." class="livros-pesquisa" />
+      </div>
+      <div class="livros-lista" id="lista-livros-registrados">
+        <p class="sem-livros">Nenhum livro registrado.</p>
+      </div>
+    </div>
+  </section>
+
+    <section class="livros-section" id="secao-ranking" style="display: none;">
+    <div class="livros-card">
+      <div class="livros-topo">
+        <input type="text" placeholder="Pesquisar livros..." class="livros-pesquisa" />
+      </div>
+      <div class="livros-lista" id="lista-livros-registrados">
+        <p class="sem-livros">Nenhum livro registrado.</p>
+      </div>
+    </div>
+  </section>
+
+    <section class="livros-section" id="secao-pendente" style="display: none;">
+    <div class="livros-card">
+      <div class="livros-topo">
+        <input type="text" placeholder="Pesquisar livros..." class="livros-pesquisa" />
+      </div>
+      <div class="livros-lista" id="lista-livros-registrados">
+        <p class="sem-livros">Nenhum livro registrado.</p>
+      </div>
+    </div>
+  </section>
+
+
+
+  <section class="livros-section" id="secao-desejos" style="display: none;">
+    <div class="livros-card">
+      <div class="livros-topo">
+        <input type="text" placeholder="Pesquisar livros..." class="livros-pesquisa" />
+      </div>
+      <div class="livros-lista" id="lista-livros-remover">
+        <p class="sem-livros">Nenhum livro disponível para remoção.</p>
+      </div>
+    </div>
+  </section>
+
+  <div id="toast-container" class="toast-container"></div>
+
+  <script type="module" src="painel-leitor.js"></script>
+</body>
+</html>
