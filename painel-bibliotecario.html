@@ -18,10 +18,14 @@
   </header>
 
   <main class="painel-conteudo">
+    <div class="card" id="card-registrar">📚 Cadastrar Livro</div>
+    <div class="card" id="card-leitor">📂 Cadastrar Leitor</div>
+    <div class="card" id="card-cadastrar-emprestimo">📂 Cadastrar Livros Emprestado</div>
+    <div class="card" id="card-criar">📂 Criar Gêneros</div>
     <div class="card" id="card-livros">📖 Livros Registrados</div>
-    <div class="card" id="card-registrar">📚 Registrar Livro</div>
+    <div class="card" id="card-emprestados">📂 Livros Emprestados</div>
+    <div class="card" id="card-ranking">📂 Ranking</div>
     <div class="card" id="card-remover">🗑️ Remover Livro</div>
-    <div class="card" id="card-criar">📂 Criar Gênero</div>
   </main>
 
   <section class="livros-section" id="secao-livros-registrados" style="display: none;">
@@ -51,7 +55,6 @@
           <input type="text" id="generoLivro" readonly placeholder="Clique para selecionar o gênero" required />
         </label>
         
-<!-- Modal minimalista de gênero -->
 <div id="modalGenero" style="display:none;">
   <div class="modal-conteudo">
     <button id="fecharModalGenero" aria-label="Fechar">&times;</button>
@@ -112,8 +115,152 @@
     </div>
   </section>
 
+  <!-- ============ Notificações ============ -->
+<section class="livros-section" id="secao-notificacoes" style="display:none;">
+  <div class="livros-card">
+    <h2>Notificações</h2>
+    <ul id="notif-lista" class="notif-lista"></ul>
+  </div>
+</section>
+
+<!-- ============ Cadastrar Leitor ============ -->
+<section class="livros-section" id="secao-cadastrar-leitor" style="display:none;">
+  <div class="livros-card">
+    <h2>Cadastrar Leitor(a)</h2>
+    <form id="form-cadastrar-leitor">
+      <label>Nome:<br><input id="leitor-nome" type="text" required></label><br>
+      <label>Série:<br><input id="leitor-serie" type="text" required></label><br>
+      <label>Turno:<br>
+        <select id="leitor-turno" required>
+          <option value="">Selecione</option>
+          <option>Manhã</option>
+          <option>Tarde</option>
+          <option>Noite</option>
+        </select>
+      </label><br>
+      <label>Turma:<br>
+        <select id="leitor-turma" required>
+          <!-- preenchido pelo JS conforme o turno -->
+        </select>
+      </label><br>
+      <label>Data de Nascimento:<br><input id="leitor-nascimento" type="date" required></label><br>
+      <label>Email:<br><input id="leitor-email" type="email" readonly placeholder="@leitor.souzanilo.com"></label><br>
+      <label>Senha:<br><input id="leitor-senha" type="text" required></label><br>
+      <div style="margin-top:10px; display:flex; gap:10px;">
+        <button type="submit">Salvar</button>
+        <button type="reset">Limpar</button>
+      </div>
+    </form>
+  </div>
+</section>
+
+<!-- ============ Cadastrar Livros Emprestados ============ -->
+<section class="livros-section" id="secao-cadastrar-emprestimo" style="display:none;">
+  <div class="livros-card">
+    <h2>Cadastrar Empréstimo</h2>
+    <form id="form-cadastrar-emprestimo">
+      <label>Nome do Leitor:<br><input id="emp-nome" type="text" required></label><br>
+      <label>Série:<br><input id="emp-serie" type="text" required></label><br>
+      <label>Turno:<br>
+        <select id="emp-turno" required>
+          <option value="">Selecione</option>
+          <option>Manhã</option>
+          <option>Tarde</option>
+          <option>Noite</option>
+        </select>
+      </label><br>
+      <label>Turma:<br>
+        <select id="emp-turma" required></select>
+      </label><br>
+      <label>Livro:<br><input id="emp-livro" type="text" required></label><br>
+      <fieldset style="margin:10px 0; border:1px dashed #555; padding:10px;">
+        <legend>Tempo de Empréstimo</legend>
+        <label>Dias (ex.: 7): <input id="emp-dias" type="number" min="0" placeholder="0"></label>
+        <span style="margin:0 8px;">ou</span>
+        <label>Até o fim do mês: 
+          <select id="emp-ate-mes">
+            <option value="">—</option>
+            <option value="1">Jan</option><option value="2">Fev</option><option value="3">Mar</option>
+            <option value="4">Abr</option><option value="5">Mai</option><option value="6">Jun</option>
+            <option value="7">Jul</option><option value="8">Ago</option><option value="9">Set</option>
+            <option value="10">Out</option><option value="11">Nov</option><option value="12">Dez</option>
+          </select>
+        </label>
+        <div style="font-size:.9rem; opacity:.8; margin-top:6px;">
+          O sistema usará o MAIOR prazo entre os dias e o fim do mês (se ambos forem informados).
+        </div>
+      </fieldset>
+      <div style="display:flex; gap:10px;">
+        <button type="submit">Registrar</button>
+        <button type="reset">Limpar</button>
+      </div>
+    </form>
+  </div>
+</section>
+
+<!-- ============ Livros Emprestados ============ -->
+<section class="livros-section" id="secao-emprestados" style="display:none;">
+  <div class="livros-card">
+    <div class="livros-topo" style="gap:10px; display:flex; flex-wrap:wrap;">
+      <input id="emp-busca" type="text" class="livros-pesquisa" placeholder="Buscar por leitor ou livro..." />
+      <select id="emp-filtro-turno">
+        <option value="">Todos os turnos</option>
+        <option>Manhã</option><option>Tarde</option><option>Noite</option>
+      </select>
+      <select id="emp-filtro-turma">
+        <option value="">Todas as turmas</option>
+      </select>
+    </div>
+    <div class="livros-lista">
+      <table style="width:100%; border-collapse:collapse;">
+        <thead>
+          <tr>
+            <th>Leitor(a)</th><th>Série</th><th>Turma</th><th>Turno</th>
+            <th>Livro</th><th>Emprestado em</th><th>Devolver até</th><th>Status</th><th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="emp-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ============ Ranking ============ -->
+<section class="livros-section" id="secao-ranking" style="display:none;">
+  <div class="livros-card">
+    <h2>Ranking</h2>
+    <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:end;">
+      <div>
+        <label>Início do Bimestre<br><input id="rank-bim-inicio" type="date"></label>
+      </div>
+      <div>
+        <label>Fim do Bimestre<br><input id="rank-bim-fim" type="date"></label>
+      </div>
+      <button id="rank-salvar-bim">Salvar Bimestre</button>
+      <div style="margin-left:20px;">
+        <label>Ano Ativo<br><input id="rank-ano-ativo" type="number" min="2000" max="2100" value=""></label>
+      </div>
+      <button id="rank-salvar-ano">Salvar Ano</button>
+    </div>
+
+    <div class="livros-lista" style="margin-top:12px;">
+      <table style="width:100%; border-collapse:collapse;">
+        <thead>
+          <tr>
+            <th>#</th><th>Top Bimestre (nome)</th><th>Qtd</th><th>Top Ano (nome)</th><th>Qtd</th>
+          </tr>
+        </thead>
+        <tbody id="rank-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+
   <div id="toast-container" class="toast-container"></div>
 
   <script type="module" src="painel.js"></script>
+<script type="module" src="painel2.js"></script>
+
 </body>
 </html>

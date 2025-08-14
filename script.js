@@ -1,24 +1,6 @@
-// ======= IMPORTS FIREBASE =======
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
-import {
-  getFirestore, collection, getDocs
-} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+import { db } from "./firebase-config.js";
+import { collection, getDocs } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
-// ======= CONFIG FIREBASE =======
-const firebaseConfig = {
-  apiKey: "AIzaSyDsDQ8AzInwgdA8gO9XOTIiqVUtOHFYNQ",
-  authDomain: "biblioteca-souza-nilo.firebaseapp.com",
-  projectId: "biblioteca-souza-nilo",
-  storageBucket: "biblioteca-souza-nilo.appspot.com",
-  messagingSenderId: "927105626349",
-  appId: "1:927105626349:web:58b89b3fc32438bdde1ce4",
-  measurementId: "G-HYC39S6B8W"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-// ======= REFERÊNCIAS =======
 const divGeneros = document.getElementById("generos");
 const divBotoes = document.getElementById("botoes-generos");
 const inputPesquisa = document.getElementById("pesquisa");
@@ -32,7 +14,6 @@ document.getElementById("btn-login-leitor").addEventListener("click", () => {
 const livrosPorGenero = {};
 let generoSelecionado = "Todos";
 
-// ======= BUSCAR LIVROS DO FIRESTORE =======
 async function carregarLivros() {
   const snapshot = await getDocs(collection(db, "livros"));
 
@@ -48,7 +29,6 @@ async function carregarLivros() {
   renderizarLivros();
 }
 
-// ======= CRIAR BOTÕES DE GÊNERO =======
 function criarBotoesGeneros() {
   divBotoes.innerHTML = "";
 
@@ -67,7 +47,6 @@ function criarBotoesGeneros() {
   }
 }
 
-// ======= FILTRAR POR GÊNERO =======
 function filtrarPorGenero(genero) {
   generoSelecionado = genero;
 
@@ -78,7 +57,6 @@ function filtrarPorGenero(genero) {
   renderizarLivros();
 }
 
-// ======= RENDERIZAR LIVROS =======
 function renderizarLivros() {
   divGeneros.innerHTML = "";
 

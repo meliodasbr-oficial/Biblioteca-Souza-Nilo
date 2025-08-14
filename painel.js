@@ -6,7 +6,6 @@ import {
   doc, setDoc, updateDoc, deleteDoc, query, where
 } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
-// ======= CONFIGURAÇÃO FIREBASE =======
 const firebaseConfig = {
   apiKey: "AIzaSyDsDQ8AzInwgdA8gO9XOTIiqVUtOH5FYNQ",
   authDomain: "biblioteca-souza-nilo.firebaseapp.com",
@@ -21,7 +20,6 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// ======= LOGIN E LOGOUT =======
 onAuthStateChanged(auth, (user) => {
   if (!user) {
     location.replace("login.html");
@@ -50,7 +48,6 @@ document.getElementById("logoutBtn").addEventListener("click", () => {
     });
 });
 
-// ======= TOASTS =======
 const toastContainer = document.getElementById("toast-container");
 function showToast(message, type = "success", duration = 5000) {
   const toast = document.createElement("div");
@@ -78,7 +75,6 @@ function showToast(message, type = "success", duration = 5000) {
   }, duration);
 }
 
-// ======= CONTROLE DE SEÇÕES =======
 const botoes = {
   "card-livros": "secao-livros-registrados",
   "card-remover": "secao-remover-livros",
@@ -107,10 +103,8 @@ document.getElementById("btn-cancelar-genero").addEventListener("click", () => {
   document.getElementById("secao-criar-genero").style.display = "none";
 });
 
-// ======= VARIÁVEL GLOBAL DOS GÊNEROS CADASTRADOS =======
 let generosCadastrados = [];
 
-// ======= GERAR PRÓXIMO ID SEQUENCIAL =======
 async function gerarProximoIdSequencial(nomeColecao) {
   const snapshot = await getDocs(collection(db, nomeColecao));
   if (snapshot.empty) return "01";
@@ -129,7 +123,6 @@ async function gerarProximoIdSequencial(nomeColecao) {
   return prox.toString().padStart(2, "0");
 }
 
-// ======= Função de normalização de texto =======
 function normalizarTexto(texto) {
   return texto
     .normalize("NFD")
@@ -138,7 +131,6 @@ function normalizarTexto(texto) {
     .trim();
 }
 
-// ======= VERIFICAR DUPLICIDADE DE LIVRO =======
 async function livroExiste(nome, autor, volume) {
   const nomeNormalizado = normalizarTexto(nome);
   const autorNormalizado = normalizarTexto(autor);
@@ -155,7 +147,6 @@ async function livroExiste(nome, autor, volume) {
   });
 }
 
-// ======= SALVAR LIVRO =======
 async function salvarLivro(livroData) {
   const { nome, autor, genero } = livroData;
   const dataHora = new Date().toISOString();
@@ -165,7 +156,6 @@ async function salvarLivro(livroData) {
   await setDoc(doc(db, genero, proxIdGenero), { ...livroData, registradoEm: dataHora });
 }
 
-// ======= FUNÇÕES PARA CRIAR TABELA E EFEITOS =======
 function criarBotao(texto, classe, onClick) {
   const btn = document.createElement("button");
   btn.textContent = texto;
@@ -275,7 +265,6 @@ function criarTabelaLivros(livros, tipoCard) {
   return tabela;
 }
 
-// ======= CARREGAR LIVROS =======
 async function carregarLivros() {
   const snapshot = await getDocs(collection(db, "livros"));
   const livros = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
@@ -307,7 +296,6 @@ function exibirLivrosRemover(livros) {
   container.appendChild(tabela);
 }
 
-// ======= CARREGAR GÊNEROS =======
 async function carregarGeneros() {
   const snapshot = await getDocs(collection(db, "generos"));
   const generos = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -387,7 +375,6 @@ async function carregarGeneros() {
   });
 }
 
-// ======= MODAL DE GÊNEROS =======
 const inputGeneroLivro = document.getElementById("generoLivro");
 const modalGenero = document.getElementById("modalGenero");
 const listaGenerosModal = document.getElementById("listaGenerosModal");
@@ -439,7 +426,6 @@ function preencherListaGenerosNoModal() {
   });
 }
 
-// ======= FORMULÁRIO REGISTRAR LIVRO =======
 document.getElementById("form-registrar-livro").addEventListener("submit", async (e) => {
   e.preventDefault();
 
@@ -478,7 +464,6 @@ document.getElementById("form-registrar-livro").addEventListener("submit", async
   }
 });
 
-// ======= FORMULÁRIO CRIAR GÊNERO =======
 document.getElementById("form-criar-genero").addEventListener("submit", async (e) => {
   e.preventDefault();
 
@@ -505,7 +490,6 @@ document.getElementById("form-criar-genero").addEventListener("submit", async (e
   }
 });
 
-// ======= FILTRO DE PESQUISA DE LIVROS =======
 document.querySelectorAll(".livros-pesquisa").forEach(input => {
   input.addEventListener("input", async (e) => {
     const termo = normalizarTexto(e.target.value);
