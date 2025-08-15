@@ -25,6 +25,12 @@ async function carregarLivros() {
     livrosPorGenero[genero].push(livro);
   });
 
+  snapshot.forEach(doc => {
+  const livro = doc.data();
+  console.log(livro);
+});
+
+
   criarBotoesGeneros();
   renderizarLivros();
 }
@@ -87,7 +93,7 @@ function renderizarLivros() {
         <p><strong>Autor:</strong> ${livro.autor}</p>
         <p><strong>Volume:</strong> ${livro.volume || "-"}</p>
         <p><strong>Prateleira:</strong> ${livro.prateleira || "-"}</p>
-        <p><strong>Disponível:</strong> ${livro.disponivel ?? 0}</p>
+        <p><strong>Quantidade:</strong> ${livro.quantidade ?? 0}</p>
       `;
       divLivros.appendChild(card);
     });
