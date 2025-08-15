@@ -97,7 +97,6 @@ h1 {
 
 .card:hover {
   transform: scale(1.05);
-  background-color: rgba(255, 255, 255, 0.25);
 }
 
 .livros-section {
@@ -108,10 +107,14 @@ h1 {
   background-color: rgba(0, 0, 0, 0.4);
   border-radius: 12px;
   padding: 20px;
-  max-width: 900px;
+  max-width: 100%;
   max-height: 750px;
   margin: 0 auto;
   box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+}
+
+tbody{
+  font-weight: 600;
 }
 
 .livros-topo {
@@ -521,9 +524,102 @@ h1 {
   overflow: hidden;
 }
 
-.card.card--selecionado { background:#0a2a5e; color:#fff; }
-.notif-lista { list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:8px; }
-.notif-item { display:flex; justify-content:space-between; align-items:center; padding:8px 10px; border:1px solid #444; border-radius:8px; }
-.btn-acao { padding:6px 10px; border-radius:8px; border:1px solid #666; background:transparent; cursor:pointer; }
-.btn-primario { padding:6px 10px; border-radius:8px; background:#0a2a5e; color:#fff; border:none; cursor:pointer; }
-.btn-remover { padding:6px 10px; border-radius:8px; background:#8b0000; color:#fff; border:none; cursor:pointer; }
+.livros-section {
+  display: none;
+  padding: 20px;
+}
+
+.livros-card {
+  background-color: rgba(0,0,0,0.4);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.livros-card h2{
+  text-align: center;
+}
+
+.livros-card table {
+  width: 100%;
+  border-collapse: collapse;
+  color: white;
+}
+
+.livros-card th, .livros-card td {
+  border: 1px solid rgba(255,255,255,0.3);
+  padding: 8px;
+  text-align: center;
+}
+
+.livros-card th {
+  background-color: rgba(255,255,255,0.1);
+}
+
+input, select, button {
+  font-size: 14px;
+  padding: 6px;
+  border-radius: 6px;
+  border: none;
+  margin-top: 4px;
+  margin-bottom: 10px;
+}
+
+button {
+  background-color: #ff4444;
+  color: white;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #cc0000;
+}
+
+.card-selecionado {
+  background-color: #003366;
+  color: #fff;
+}
+
+
+/* Modal Aluno e Gênero */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.7);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: #222;
+  color: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  width: 320px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.modal-content ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.modal-content li {
+  border-bottom: 1px solid #444;
+  padding: 8px;
+  cursor: pointer;
+}
+
+.modal-content li:hover {
+  background-color: #555;
+}
+
+#modalAluno .modal-content, #modalGenero .modal-content {
+  background-color: #1f1f1f;
+}

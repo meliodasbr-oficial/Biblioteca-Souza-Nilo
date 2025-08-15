@@ -1,24 +1,7 @@
-// ======= IMPORTS FIREBASE =======
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
-import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
-import {
-  getFirestore, collection, addDoc, getDocs,
-  doc, setDoc, updateDoc, deleteDoc, query, where
-} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+import { auth, db } from './firebase-config.js';
+import { onAuthStateChanged, signOut, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
+import { collection, addDoc, getDocs, getDoc, doc, setDoc, updateDoc, deleteDoc, query, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyDsDQ8AzInwgdA8gO9XOTIiqVUtOH5FYNQ",
-  authDomain: "biblioteca-souza-nilo.firebaseapp.com",
-  projectId: "biblioteca-souza-nilo",
-  storageBucket: "biblioteca-souza-nilo.firebasestorage.app",
-  messagingSenderId: "927105626349",
-  appId: "1:927105626349:web:58b89b3fc32438bdde1ce4",
-  measurementId: "G-HYC39S6B8W"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
 
 onAuthStateChanged(auth, (user) => {
   if (!user) {
@@ -31,13 +14,17 @@ onAuthStateChanged(auth, (user) => {
 onAuthStateChanged(auth, (user) => {
   if (user) {
     const email = user.email;
+    if (!email.endsWith("@biblioteca.souzanilo.com")) {
+      alert("Acesso negado! Você não possui permissão para acessar o painel.");
+      signOut(auth).then(() => location.replace("login.html"));
+      return;
+    }
     const emailCurto = email.length > 14 ? email.slice(0, 14) + "..." : email;
     document.getElementById("user-email").textContent = `Logado como: ${emailCurto}`;
   } else {
     window.location.href = "login.html";
   }
 });
-
 
 document.getElementById("logoutBtn").addEventListener("click", () => {
   signOut(auth)
@@ -76,24 +63,32 @@ function showToast(message, type = "success", duration = 5000) {
 }
 
 const botoes = {
-  "card-livros": "secao-livros-registrados",
-  "card-remover": "secao-remover-livros",
   "card-registrar": "secao-registrar-livro",
-  "card-criar": "secao-criar-genero"
+  "card-leitor": "secao-registrar-leitor",
+  "card-cadastrar-emprestimo": "secao-registrar-emprestimo",
+  "card-criar": "secao-criar-genero",
+  "card-livros": "secao-livros-registrados",
+  "card-emprestados": "secao-livros-emprestados",
+  "card-ranking": "secao-ranking",
+  "card-remover": "secao-remover-livros",
+  "card-cadastrados": "secao-leitores-cadastrados",
+  "card-notificacao": "secao-notificacoes"
 };
+
 
 Object.keys(botoes).forEach(id => {
   const botao = document.getElementById(id);
+  if (!botao) return;
   botao.addEventListener("click", () => {
     Object.values(botoes).forEach(secao => {
-      document.getElementById(secao).style.display = "none";
+      const el = document.getElementById(secao);
+      if(el) el.style.display = "none";
     });
-    document.getElementById(botoes[id]).style.display = "block";
-
-    if (id === "card-criar") carregarGeneros();
-    if (id === "card-livros" || id === "card-remover") carregarLivros();
+    const target = document.getElementById(botoes[id]);
+    if(target) target.style.display = "block";
   });
 });
+
 
 document.getElementById("btn-cancelar-registrar").addEventListener("click", () => {
   document.getElementById("secao-registrar-livro").style.display = "none";
@@ -353,7 +348,6 @@ async function carregarGeneros() {
   }
 });
 
-
     div.appendChild(spanNome);
     div.appendChild(btnExcluir);
 
@@ -435,7 +429,6 @@ document.getElementById("form-registrar-livro").addEventListener("submit", async
   const quantidade = Number(document.getElementById("quantidadeLivro").value);
   const volume = document.getElementById("volumeLivro")?.value.trim() || "1";
   const prateleira = document.getElementById("numeroPrateleira").value.trim();
-
 
   if (!nome || !autor || !genero || quantidade <= 0) {
     showToast("Preencha todos os campos corretamente.", "warning");
@@ -522,8 +515,198 @@ document.querySelectorAll(".livros-pesquisa").forEach(input => {
   });
 });
 
-// ======= CARREGAMENTO INICIAL =======
+const todosCards = document.querySelectorAll(".card");
+todosCards.forEach(card => {
+  card.addEventListener("click", () => {
+    todosCards.forEach(c => c.classList.remove("card-selecionado"));
+    card.classList.add("card-selecionado");
+  });
+});
+
+// Chat contiua desta parte para baixo
+
+let alunosCadastrados = [];
+
+async function carregarAlunos() {
+  const snapshot = await getDocs(collection(db, "alunos"));
+  alunosCadastrados = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+}
+
+const inputAluno = document.getElementById("nomeAluno");
+const modalAluno = document.getElementById("modalAluno");
+const listaAlunosModal = document.getElementById("listaAlunosModal");
+const btnFecharModalAluno = document.getElementById("fecharModalAluno");
+
+inputAluno.addEventListener("click", async () => {
+  await carregarAlunos();
+  preencherListaAlunosNoModal();
+  modalAluno.style.display = "flex";
+});
+
+btnFecharModalAluno.addEventListener("click", () => {
+  modalAluno.style.display = "none";
+});
+
+modalAluno.addEventListener("click", (e) => {
+  if (e.target === modalAluno) modalAluno.style.display = "none";
+});
+
+function preencherListaAlunosNoModal() {
+  listaAlunosModal.innerHTML = "";
+
+  const turnoSelecionado = document.getElementById("turnoAluno").value;
+  const turmaSelecionada = document.getElementById("turmaAluno").value;
+
+  const filtrados = alunosCadastrados.filter(a => a.turno === turnoSelecionado && a.turma === turmaSelecionada);
+
+  if (filtrados.length === 0) {
+    listaAlunosModal.innerHTML = "<li>Nenhum aluno encontrado.</li>";
+    return;
+  }
+
+  filtrados.forEach(aluno => {
+    const li = document.createElement("li");
+    li.textContent = aluno.nome;
+    li.style.cursor = "pointer";
+    li.style.padding = "8px 12px";
+    li.style.borderRadius = "4px";
+
+    li.addEventListener("mouseenter", () => li.style.backgroundColor = "#444");
+    li.addEventListener("mouseleave", () => li.style.backgroundColor = "transparent");
+
+    li.addEventListener("click", () => {
+      inputAluno.value = aluno.nome;
+      inputAluno.dataset.id = aluno.id;
+      modalAluno.style.display = "none";
+    });
+
+    listaAlunosModal.appendChild(li);
+  });
+}
+
+function calcularDataEntrega(dias) {
+  const hoje = new Date();
+  hoje.setDate(hoje.getDate() + Number(dias));
+  return hoje.toISOString().split("T")[0];
+}
+
+document.getElementById("form-registrar-emprestimo").addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const alunoNome = inputAluno.value.trim();
+  const alunoId = inputAluno.dataset.id;
+  const turno = document.getElementById("turnoAluno").value;
+  const turma = document.getElementById("turmaAluno").value;
+  const livroNome = document.getElementById("livroEmprestimo").value.trim();
+  const diasEntrega = Number(document.getElementById("diasEntrega").value);
+
+  if (!alunoNome || !turno || !turma || !livroNome || diasEntrega <= 0) {
+    showToast("Preencha todos os campos corretamente.", "warning");
+    return;
+  }
+
+  const dataEntrega = calcularDataEntrega(diasEntrega);
+  const dataPegou = new Date().toISOString().split("T")[0];
+
+  try {
+    await addDoc(collection(db, "emprestimos"), {
+      alunoId,
+      nomeAluno: alunoNome,
+      turno,
+      turma,
+      livro: livroNome,
+      dataPegou,
+      dataEntrega
+    });
+
+    showToast(`Empréstimo registrado: ${alunoNome} - ${livroNome}`, "success");
+    document.getElementById("form-registrar-emprestimo").reset();
+  } catch (err) {
+    showToast("Erro ao registrar empréstimo: " + err.message, "error");
+  }
+});
+
+const inputDataNasc = document.getElementById("dataNascimento");
+inputDataNasc.addEventListener("input", e => {
+  let valor = e.target.value.replace(/\D/g, ""); // Remove não-dígitos
+  if (valor.length > 2) valor = valor.slice(0,2) + '/' + valor.slice(2);
+  if (valor.length > 5) valor = valor.slice(0,5) + '/' + valor.slice(5,9);
+  e.target.value = valor;
+});
+
+document.getElementById("form-registrar-leitor").addEventListener("submit", async e => {
+  e.preventDefault();
+
+  const nome = document.getElementById("nomeAlunoForm").value.trim();
+  const turno = document.getElementById("turnoAlunoForm").value;
+  const turma = document.getElementById("turmaAlunoForm").value;
+  const dataNascimento = document.getElementById("dataNascimento").value;
+  const email = document.getElementById("emailAluno").value.trim();
+  const senha = document.getElementById("senhaAluno").value;
+
+  if (!nome || !turno || !turma || !dataNascimento || !email || !senha) {
+    showToast("Preencha todos os campos.", "warning");
+    return;
+  }
+
+  try {
+    const userCred = await createUserWithEmailAndPassword(auth, email, senha);
+    await setDoc(doc(db, "alunos", userCred.user.uid), {
+      nome,
+      turno,
+      turma,
+      dataNascimento,
+      email,
+      senha
+    });
+
+    showToast(`Aluno ${nome} cadastrado com sucesso!`, "success");
+    document.getElementById("form-registrar-leitor").reset();
+    carregarAlunos();
+  } catch (err) {
+    showToast("Erro ao cadastrar aluno: " + err.message, "error");
+  }
+});
+
+function exibirLeitores() {
+  const container = document.getElementById("lista-leitores");
+  container.innerHTML = "";
+  alunosCadastrados.forEach(aluno => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${aluno.nome}</td>
+      <td>${aluno.dataNascimento}</td>
+      <td>${aluno.email}</td>
+      <td><span class="senha" style="cursor:pointer">${"*".repeat(aluno.senha.length)}</span></td>
+      <td>
+        <button class="btn-editar">Editar</button>
+        <button class="btn-remover">Remover</button>
+      </td>
+    `;
+    const spanSenha = tr.querySelector(".senha");
+    spanSenha.addEventListener("click", () => {
+      spanSenha.textContent = aluno.senha;
+    });
+
+    tr.querySelector(".btn-remover").addEventListener("click", async () => {
+      const confirmDel = confirm(`Deseja remover ${aluno.nome}?`);
+      if (!confirmDel) return;
+      try {
+        await deleteDoc(doc(db, "alunos", aluno.id));
+        showToast("Aluno removido!", "success");
+        carregarAlunos();
+      } catch (err) {
+        showToast("Erro: " + err.message, "error");
+      }
+    });
+    tr.querySelector(".btn-editar").addEventListener("click", () => {
+    });
+
+    container.appendChild(tr);
+  });
+}
+
+
 carregarGeneros();
 carregarLivros();
-
 
