@@ -1,24 +1,32 @@
-import { auth, db } from './firebase-config.js';
-import { onAuthStateChanged, signOut, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
-import { collection, addDoc, getDocs, getDoc, doc, setDoc, updateDoc, deleteDoc, query, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+// ======= IMPORTS FIREBASE =======
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
+import { getFirestore, collection, addDoc, getDocs, doc, setDoc, updateDoc, deleteDoc, query, where } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
+// ======= CONFIG FIREBASE =======
+const firebaseConfig = {
+  apiKey: "AIzaSyDsDQ8AzInwgdA8gO9XOTIiqVUtOH5FYNQ",
+  authDomain: "biblioteca-souza-nilo.firebaseapp.com",
+  projectId: "biblioteca-souza-nilo",
+  storageBucket: "biblioteca-souza-nilo.firebasestorage.app",
+  messagingSenderId: "927105626349",
+  appId: "1:927105626349:web:58b89b3fc32438bdde1ce4",
+  measurementId: "G-HYC39S6B8W"
+};
 
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+// ======= LOGIN E LOGOUT =======
 onAuthStateChanged(auth, (user) => {
-  if (!user) {
-    location.replace("login.html");
-  } else {
-    console.log("Usuário autenticado:", user.email);
-  }
+  if (!user) location.replace("login.html");
+  else console.log("Usuário autenticado:", user.email);
 });
 
 onAuthStateChanged(auth, (user) => {
   if (user) {
     const email = user.email;
-    if (!email.endsWith("@biblioteca.souzanilo.com")) {
-      alert("Acesso negado! Você não possui permissão para acessar o painel.");
-      signOut(auth).then(() => location.replace("login.html"));
-      return;
-    }
     const emailCurto = email.length > 14 ? email.slice(0, 14) + "..." : email;
     document.getElementById("user-email").textContent = `Logado como: ${emailCurto}`;
   } else {
@@ -35,11 +43,11 @@ document.getElementById("logoutBtn").addEventListener("click", () => {
     });
 });
 
+// ======= TOASTS =======
 const toastContainer = document.getElementById("toast-container");
 function showToast(message, type = "success", duration = 5000) {
   const toast = document.createElement("div");
   toast.className = `toast ${type}`;
-
   let emoji = "ℹ️";
   if (type === "success") emoji = "✅";
   else if (type === "error") emoji = "❌";
@@ -56,46 +64,58 @@ function showToast(message, type = "success", duration = 5000) {
   durationBar.style.animation = `durationBarAnim ${duration}ms linear forwards`;
   setTimeout(() => {
     toast.style.animation = "slideOutToast 0.5s forwards";
-    toast.addEventListener("animationend", () => {
-      toast.remove();
-    });
+    toast.addEventListener("animationend", () => toast.remove());
   }, duration);
 }
 
-const botoes = {
-  "card-registrar": "secao-registrar-livro",
-  "card-leitor": "secao-registrar-leitor",
-  "card-cadastrar-emprestimo": "secao-registrar-emprestimo",
-  "card-criar": "secao-criar-genero",
-  "card-livros": "secao-livros-registrados",
-  "card-emprestados": "secao-livros-emprestados",
-  "card-ranking": "secao-ranking",
-  "card-remover": "secao-remover-livros",
-  "card-cadastrados": "secao-leitores-cadastrados",
-  "card-notificacao": "secao-notificacoes"
+// ======= TURMAS =======
+const turmasPorTurno = {
+  "Manhã": [
+    "1º Ano A","1º Ano B","1º Ano C","1º Ano D","1º Ano E",
+    "2º Ano A","2º Ano B","2º Ano C","2º Ano D","2º Ano E",
+    "3º Ano A","3º Ano B","3º Ano C","3º Ano D","3º Ano E",
+    "Outros"
+  ],
+  "Tarde": [
+    "6º Ano A","6º Ano B","6º Ano C","6º Ano D","6º Ano E",
+    "7º Ano A","7º Ano B","7º Ano C","7º Ano D","7º Ano E",
+    "8º Ano A","8º Ano B","8º Ano C","8º Ano D","8º Ano E",
+    "9º Ano A","9º Ano B","9º Ano C","9º Ano D","9º Ano E",
+    "Outros"
+  ],
+  "Noite": [
+    "EJA 1","EJA 2","Cursos"
+  ]
 };
 
+// ======= CONTROLE DE SEÇÕES =======
+const botoes = {
+  "card-livros": "secao-livros-registrados",
+  "card-registrar": "secao-registrar-livro",
+  "card-criar": "secao-criar-genero",
+  "card-leitores": "secao-registrar-leitor",
+  "card-lista-leitores": "secao-lista-leitores",
+  "card-emprestimo": "secao-registrar-emprestimo",
+  "card-lista-emprestimos": "secao-lista-emprestimos",
+  "card-notificacoes": "secao-notificacoes",
+  "card-ranking": "secao-ranking"
+};
 
 Object.keys(botoes).forEach(id => {
   const botao = document.getElementById(id);
-  if (!botao) return;
   botao.addEventListener("click", () => {
     Object.values(botoes).forEach(secao => {
-      const el = document.getElementById(secao);
-      if(el) el.style.display = "none";
+      document.getElementById(secao).style.display = "none";
     });
-    const target = document.getElementById(botoes[id]);
-    if(target) target.style.display = "block";
+    document.getElementById(botoes[id]).style.display = "block";
+
+    if (id === "card-criar") carregarGeneros();
+    if (id === "card-livros") carregarLivros();
   });
 });
 
-
 document.getElementById("btn-cancelar-registrar").addEventListener("click", () => {
   document.getElementById("secao-registrar-livro").style.display = "none";
-});
-
-document.getElementById("btn-cancelar-genero").addEventListener("click", () => {
-  document.getElementById("secao-criar-genero").style.display = "none";
 });
 
 let generosCadastrados = [];
@@ -103,53 +123,60 @@ let generosCadastrados = [];
 async function gerarProximoIdSequencial(nomeColecao) {
   const snapshot = await getDocs(collection(db, nomeColecao));
   if (snapshot.empty) return "01";
-
-  const numeros = snapshot.docs
-    .map(doc => parseInt(doc.id))
-    .filter(num => !isNaN(num))
-    .sort((a, b) => a - b);
-
+  const numeros = snapshot.docs.map(doc => parseInt(doc.id)).filter(num => !isNaN(num)).sort((a,b)=>a-b);
   let prox = 1;
-  for (const num of numeros) {
-    if (num === prox) prox++;
-    else break;
-  }
-
-  return prox.toString().padStart(2, "0");
+  for (const num of numeros) { if (num === prox) prox++; else break; }
+  return prox.toString().padStart(2,"0");
 }
 
 function normalizarTexto(texto) {
-  return texto
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .trim();
+  return texto.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim();
 }
 
 async function livroExiste(nome, autor, volume) {
   const nomeNormalizado = normalizarTexto(nome);
   const autorNormalizado = normalizarTexto(autor);
   const volumeNormalizado = volume.trim();
-
   const livrosSnap = await getDocs(collection(db, "livros"));
-  return livrosSnap.docs.some(doc => {
-    const data = doc.data();
-    const nomeDoc = normalizarTexto(data.nome);
-    const autorDoc = normalizarTexto(data.autor);
-    const volumeDoc = data.volume ? data.volume.trim() : "1";
-
-    return nomeDoc === nomeNormalizado && autorDoc === autorNormalizado && volumeDoc === volumeNormalizado;
+  return livrosSnap.docs.some(doc=>{
+    const data=doc.data();
+    const nomeDoc=normalizarTexto(data.nome);
+    const autorDoc=normalizarTexto(data.autor);
+    const volumeDoc=data.volume?data.volume.trim():"1";
+    return nomeDoc===nomeNormalizado && autorDoc===autorNormalizado && volumeDoc===volumeNormalizado;
   });
 }
 
 async function salvarLivro(livroData) {
-  const { nome, autor, genero } = livroData;
   const dataHora = new Date().toISOString();
   const proxIdLivros = await gerarProximoIdSequencial("livros");
   await setDoc(doc(db, "livros", proxIdLivros), { ...livroData, registradoEm: dataHora });
-  const proxIdGenero = await gerarProximoIdSequencial(genero);
-  await setDoc(doc(db, genero, proxIdGenero), { ...livroData, registradoEm: dataHora });
+  const proxIdGenero = await gerarProximoIdSequencial(livroData.genero);
+  await setDoc(doc(db, livroData.genero, proxIdGenero), { ...livroData, registradoEm: dataHora });
 }
+
+const dialogoConfirmacao = document.getElementById("dialogoConfirmacao");
+const dialogoMensagem = document.getElementById("dialogoMensagem");
+const btnSimDialog = document.getElementById("btnSimDialog");
+const btnCancelarDialog = document.getElementById("btnCancelarDialog");
+
+let callbackConfirmacao = null;
+
+function abrirDialogo(mensagem, onConfirm) {
+  dialogoMensagem.textContent = mensagem;
+  callbackConfirmacao = onConfirm;
+  dialogoConfirmacao.showModal();
+}
+
+btnSimDialog.addEventListener("click", () => {
+  if (callbackConfirmacao) callbackConfirmacao();
+  dialogoConfirmacao.close();
+});
+
+btnCancelarDialog.addEventListener("click", () => {
+  dialogoConfirmacao.close();
+  callbackConfirmacao = null;
+});
 
 function criarBotao(texto, classe, onClick) {
   const btn = document.createElement("button");
@@ -161,95 +188,84 @@ function criarBotao(texto, classe, onClick) {
 }
 
 function aplicarEfeitoHoverELinha(tr) {
-  tr.style.transition = "background-color 0.3s";
-  tr.addEventListener("mouseenter", () => {
-    tr.style.backgroundColor = "#333";
-    tr.style.cursor = "pointer";
-  });
-  tr.addEventListener("mouseleave", () => {
-    if (!tr.classList.contains("selecionado")) {
-      tr.style.backgroundColor = "transparent";
-    }
-  });
+  tr.style.transition="background-color 0.3s";
+  tr.addEventListener("mouseenter",()=>{tr.style.backgroundColor="#333";tr.style.cursor="pointer";});
+  tr.addEventListener("mouseleave",()=>{if(!tr.classList.contains("selecionado")) tr.style.backgroundColor="transparent";});
 }
 
 function criarTabelaLivros(livros, tipoCard) {
-  const tabela = document.createElement("table");
-  tabela.style.width = "100%";
-  tabela.style.borderCollapse = "collapse";
+  const tabela=document.createElement("table");
+  tabela.style.width="100%";
+  tabela.style.borderCollapse="collapse";
 
-  const thead = document.createElement("thead");
-  const trHead = document.createElement("tr");
-  ["Nome", "Autor", "Gênero", "Quantidade", "Volume", "Prateleira", ""].forEach(texto => {
-    const th = document.createElement("th");
-    th.textContent = texto;
-    th.style.borderBottom = "2px solid #ff4444";
-    th.style.padding = "8px";
-    th.style.textAlign = "left";
+  const thead=document.createElement("thead");
+  const trHead=document.createElement("tr");
+  ["Nome","Autor","Gênero","Quantidade","Volume","Prateleira",""].forEach(texto=>{
+    const th=document.createElement("th");
+    th.textContent=texto;
+    th.style.borderBottom="2px solid #ff4444";
+    th.style.padding="8px";
+    th.style.textAlign="left";
     trHead.appendChild(th);
   });
   thead.appendChild(trHead);
   tabela.appendChild(thead);
 
-  const tbody = document.createElement("tbody");
+  const tbody=document.createElement("tbody");
 
-  livros.forEach(livro => {
-    const tr = document.createElement("tr");
-    tr.style.borderBottom = "1px solid #444";
+  livros.forEach(livro=>{
+    const tr=document.createElement("tr");
+    tr.style.borderBottom="1px solid #444";
 
-    ["nome", "autor", "genero", "quantidade", "volume", "prateleira"].forEach(campo => {
-      const td = document.createElement("td");
-      td.textContent = livro[campo] || (campo === "volume" ? "1" : "");
-      td.style.padding = "8px";
+    ["nome","autor","genero","quantidade","volume","prateleira"].forEach(campo=>{
+      const td=document.createElement("td");
+      td.textContent=livro[campo]||(campo==="volume"?"1":"");
+      td.style.padding="8px";
       tr.appendChild(td);
     });
 
-    const tdBtn = document.createElement("td");
-    tdBtn.style.padding = "8px";
+    const tdBtn=document.createElement("td");
+    tdBtn.style.padding="8px";
 
-    let botao;
-    if (tipoCard === "remover") {
-      botao = criarBotao("Remover", "btn-remover", async () => {
-        const confirmar = confirm(`Deseja realmente remover o livro "${livro.nome}" volume ${livro.volume || "1"}?`);
-        if (!confirmar) return;
-
-        try {
-          await deleteDoc(doc(db, "livros", livro.id));
-          showToast(`Livro "${livro.nome}" volume ${livro.volume || "1"} foi removido com sucesso!`, "success");
-          carregarLivros();
-        } catch (err) {
-          showToast("Erro ao remover livro: " + err.message, "error");
-        }
+let botao = criarBotao("Remover", "btn-remover", () => {
+  abrirDialogo(`Deseja realmente remover o livro "${livro.nome}" volume ${livro.volume || "1"}?`, async () => {
+    try {
+      await deleteDoc(doc(db, "livros", livro.id));
+      const generoRef = collection(db, livro.genero);
+      const generoSnap = await getDocs(generoRef);
+      const docGenero = generoSnap.docs.find(d => {
+        const data = d.data();
+        return data.nome === livro.nome &&
+               data.autor === livro.autor &&
+               (data.volume || "1") === (livro.volume || "1");
       });
-    }
+      if (docGenero) await deleteDoc(doc(db, livro.genero, docGenero.id));
 
-    if (botao) {
-      botao.style.display = "none";
-      tdBtn.appendChild(botao);
+      showToast(`Livro "${livro.nome}" volume ${livro.volume || "1"} removido!`, "success");
+      carregarLivros();
+    } catch (err) {
+      showToast("Erro ao remover livro: " + err.message, "error");
     }
+  });
+});
 
+    botao.style.display="none";
+    tdBtn.appendChild(botao);
     tr.appendChild(tdBtn);
 
     aplicarEfeitoHoverELinha(tr);
 
-    tr.addEventListener("click", () => {
-      const tbody = tr.parentNode;
-      const linhaSelecionada = tbody.querySelector("tr.selecionado");
-
-      if (linhaSelecionada === tr) {
-        tr.classList.remove("selecionado");
-        if (botao) botao.style.display = "none";
-        tr.style.backgroundColor = "transparent";
-      } else {
-        tbody.querySelectorAll("tr").forEach(linha => {
-          linha.classList.remove("selecionado");
-          const btns = linha.querySelectorAll("button");
-          btns.forEach(b => (b.style.display = "none"));
-          linha.style.backgroundColor = "transparent";
-        });
+    tr.addEventListener("click",()=>{
+      const estaSelecionado = tr.classList.contains("selecionado");
+      tbody.querySelectorAll("tr").forEach(linha=>{
+        linha.classList.remove("selecionado");
+        linha.querySelectorAll("button").forEach(b=>b.style.display="none");
+        linha.style.backgroundColor="transparent";
+      });
+      if(!estaSelecionado){
         tr.classList.add("selecionado");
-        if (botao) botao.style.display = "inline-block";
-        tr.style.backgroundColor = "#555";
+        botao.style.display="inline-block";
+        tr.style.backgroundColor="#555";
       }
     });
 
@@ -260,108 +276,85 @@ function criarTabelaLivros(livros, tipoCard) {
   return tabela;
 }
 
-async function carregarLivros() {
-  const snapshot = await getDocs(collection(db, "livros"));
-  const livros = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
-  livros.sort((a, b) => a.nome.localeCompare(b.nome, 'pt', { sensitivity: 'base' }));
-
+async function carregarLivros(){
+  const snapshot = await getDocs(collection(db,"livros"));
+  const livros = snapshot.docs.map(doc=>({...doc.data(), id: doc.id}));
+  livros.sort((a,b)=>a.nome.localeCompare(b.nome,'pt',{sensitivity:'base'}));
   exibirLivrosRegistrados(livros);
-  exibirLivrosRemover(livros);
 }
 
-function exibirLivrosRegistrados(livros) {
+function exibirLivrosRegistrados(livros){
   const container = document.getElementById("lista-livros-registrados");
-  container.innerHTML = "";
-  if (livros.length === 0) {
-    container.innerHTML = `<p class="sem-livros">Nenhum livro registrado.</p>`;
+  container.innerHTML="";
+  if(livros.length===0){
+    container.innerHTML='<p class="sem-livros">Nenhum livro registrado.</p>';
     return;
   }
-  const tabela = criarTabelaLivros(livros, "registrados");
+  const tabela = criarTabelaLivros(livros,"registrados");
   container.appendChild(tabela);
 }
 
-function exibirLivrosRemover(livros) {
-  const container = document.getElementById("lista-livros-remover");
-  container.innerHTML = "";
-  if (livros.length === 0) {
-    container.innerHTML = `<p class="sem-livros">Nenhum livro disponível para remoção.</p>`;
-    return;
-  }
-  const tabela = criarTabelaLivros(livros, "remover");
-  container.appendChild(tabela);
-}
-
-async function carregarGeneros() {
-  const snapshot = await getDocs(collection(db, "generos"));
-  const generos = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-  generosCadastrados = generos.map(g => g.nome);
+async function carregarGeneros(){
+  const snapshot = await getDocs(collection(db,"generos"));
+  const generos = snapshot.docs.map(doc=>({id:doc.id,...doc.data()}));
+  generosCadastrados = generos.map(g=>g.nome);
 
   const container = document.getElementById("lista-generos");
-  container.innerHTML = "";
+  container.innerHTML="";
 
-  if (generos.length === 0) {
-    container.innerHTML = `<p class="sem-livros">Nenhum gênero cadastrado.</p>`;
+  if(generos.length===0){
+    container.innerHTML='<p class="sem-livros">Nenhum gênero cadastrado.</p>';
     return;
   }
 
-  generos.forEach(genero => {
-    const div = document.createElement("div");
-    div.className = "genero-item";
-    div.style.display = "flex";
-    div.style.justifyContent = "space-between";
-    div.style.alignItems = "center";
-    div.style.padding = "6px 10px";
-    div.style.borderBottom = "1px solid #444";
-    div.style.cursor = "pointer";
+  generos.forEach(genero=>{
+    const div=document.createElement("div");
+    div.className="genero-item";
+    div.style.display="flex";
+    div.style.justifyContent="space-between";
+    div.style.alignItems="center";
+    div.style.padding="6px 10px";
+    div.style.borderBottom="1px solid #444";
+    div.style.cursor="pointer";
 
-    const spanNome = document.createElement("span");
-    spanNome.textContent = genero.nome;
+    const spanNome=document.createElement("span");
+    spanNome.textContent=genero.nome;
 
-    const btnExcluir = document.createElement("button");
-    btnExcluir.textContent = "Excluir";
-    btnExcluir.className = "btn-remover";
-    btnExcluir.style.marginLeft = "10px";
-    btnExcluir.style.display = "none";
+    const btnExcluir=criarBotao("Excluir","btn-remover",()=>{ 
+      abrirDialogo(`Deseja excluir o gênero "${genero.nome}"? Isso removerá todos os livros associados.`, async ()=>{
+        try{
+          const generoRef=collection(db,genero.nome);
+          const livrosSnap=await getDocs(generoRef);
+          await Promise.all(livrosSnap.docs.map(doc=>deleteDoc(doc.ref)));
 
-    btnExcluir.addEventListener("click", async (e) => {
-  e.stopPropagation();
-  const confirmar = confirm(`Deseja excluir o gênero "${genero.nome}"? Isso também removerá todos os livros associados.`);
-  if (!confirmar) return;
+          const livrosRef=collection(db,"livros");
+          const q=query(livrosRef,where("genero","==",genero.nome));
+          const snapLivros=await getDocs(q);
+          await Promise.all(snapLivros.docs.map(doc=>deleteDoc(doc.ref)));
 
-  try {
-    const generoRef = collection(db, genero.nome);
-    const livrosSnap = await getDocs(generoRef);
-    const promGen = livrosSnap.docs.map(doc => deleteDoc(doc.ref));
-    await Promise.all(promGen);
-    const livrosRef = collection(db, "livros");
-    const q = query(livrosRef, where("genero", "==", genero.nome));
-    const snapLivros = await getDocs(q);
-    const promLivros = snapLivros.docs.map(doc => deleteDoc(doc.ref));
-    await Promise.all(promLivros);
-    await deleteDoc(doc(db, "generos", genero.id));
+          await deleteDoc(doc(db,"generos",genero.id));
 
-    showToast(`Gênero "${genero.nome}" e livros relacionados foram removidos!`, "success");
-    carregarGeneros();
-    carregarLivros();
-  } catch (err) {
-    showToast("Erro ao remover gênero e livros: " + err.message, "error");
-  }
-});
+          showToast(`Gênero "${genero.nome}" e livros relacionados foram removidos!`,"success");
+          carregarGeneros();
+          carregarLivros();
+        }catch(err){showToast("Erro: "+err.message,"error");}
+      });
+    });
+
+    btnExcluir.style.display="none";
 
     div.appendChild(spanNome);
     div.appendChild(btnExcluir);
 
-    div.addEventListener("click", () => {
+    div.addEventListener("click",()=>{
       const selecionado = div.classList.contains("selecionado");
-      const todosItens = document.querySelectorAll(".genero-item");
-      todosItens.forEach(item => {
+      document.querySelectorAll(".genero-item").forEach(item=>{
         item.classList.remove("selecionado");
-        item.querySelector("button").style.display = "none";
+        item.querySelector("button").style.display="none";
       });
-
-      if (!selecionado) {
+      if(!selecionado){
         div.classList.add("selecionado");
-        btnExcluir.style.display = "inline-block";
+        btnExcluir.style.display="inline-block";
       }
     });
 
@@ -374,339 +367,784 @@ const modalGenero = document.getElementById("modalGenero");
 const listaGenerosModal = document.getElementById("listaGenerosModal");
 const btnFecharModalGenero = document.getElementById("fecharModalGenero");
 
-inputGeneroLivro.addEventListener("click", () => {
+inputGeneroLivro.addEventListener("click", ()=>{
   preencherListaGenerosNoModal();
-  modalGenero.style.display = "flex";
+  modalGenero.style.display="flex";
 });
 
-btnFecharModalGenero.addEventListener("click", () => {
-  modalGenero.style.display = "none";
-});
+btnFecharModalGenero.addEventListener("click",()=>{modalGenero.style.display="none";});
+modalGenero.addEventListener("click",(e)=>{if(e.target===modalGenero) modalGenero.style.display="none";});
 
-modalGenero.addEventListener("click", (e) => {
-  if (e.target === modalGenero) {
-    modalGenero.style.display = "none";
-  }
-});
+function preencherListaGenerosNoModal(){
+  listaGenerosModal.innerHTML="";
+  if(generosCadastrados.length===0){listaGenerosModal.innerHTML="<li>Nenhum gênero cadastrado.</li>"; return;}
+  generosCadastrados.forEach(g=>{
+    const li=document.createElement("li");
+    li.textContent=g;
+    li.style.cursor="pointer";
+    li.style.padding="8px 12px";
+    li.style.borderRadius="4px";
 
-function preencherListaGenerosNoModal() {
-  listaGenerosModal.innerHTML = "";
-
-  if (generosCadastrados.length === 0) {
-    listaGenerosModal.innerHTML = "<li>Nenhum gênero cadastrado.</li>";
-    return;
-  }
-
-  generosCadastrados.forEach(genero => {
-    const li = document.createElement("li");
-    li.textContent = genero;
-    li.style.cursor = "pointer";
-    li.style.padding = "8px 12px";
-    li.style.borderRadius = "4px";
-
-    li.addEventListener("mouseenter", () => {
-      li.style.backgroundColor = "";
+    li.addEventListener("mouseenter",()=>{li.style.backgroundColor="";});
+    li.addEventListener("mouseleave",()=>{li.style.backgroundColor="transparent";});
+    li.addEventListener("click",()=>{
+      inputGeneroLivro.value=g;
+      modalGenero.style.display="none";
     });
-    li.addEventListener("mouseleave", () => {
-      li.style.backgroundColor = "transparent";
-    });
-
-    li.addEventListener("click", () => {
-      inputGeneroLivro.value = genero;
-      modalGenero.style.display = "none";
-    });
-
     listaGenerosModal.appendChild(li);
   });
 }
 
-document.getElementById("form-registrar-livro").addEventListener("submit", async (e) => {
+document.getElementById("form-registrar-livro").addEventListener("submit", async(e)=>{
   e.preventDefault();
 
-  const nome = document.getElementById("nomeLivro").value.trim();
-  const autor = document.getElementById("autorLivro").value.trim();
-  const genero = inputGeneroLivro.value.trim();
-  const quantidade = Number(document.getElementById("quantidadeLivro").value);
-  const volume = document.getElementById("volumeLivro")?.value.trim() || "1";
-  const prateleira = document.getElementById("numeroPrateleira").value.trim();
+  const nome=document.getElementById("nomeLivro").value.trim();
+  const autor=document.getElementById("autorLivro").value.trim();
+  const genero=inputGeneroLivro.value.trim();
+  const quantidade=Number(document.getElementById("quantidadeLivro").value);
+  const volume=document.getElementById("volumeLivro")?.value.trim()||"1";
+  const prateleira=document.getElementById("prateleiraLivro").value.trim();
 
-  if (!nome || !autor || !genero || quantidade <= 0) {
+  if(!nome || !autor || !genero || quantidade<=0){showToast("Preencha todos os campos corretamente.","warning"); return;}
+  if(!generosCadastrados.includes(genero)){showToast("Gênero inválido. Escolha um gênero existente.","warning"); return;}
+  if(await livroExiste(nome,autor,volume)){showToast(`Livro "${nome}" volume ${volume} já cadastrado.`,"warning"); return;}
+
+  const livroData={nome,autor,genero,quantidade,volume,prateleira};
+
+  try{
+    await salvarLivro(livroData);
+    showToast(`"${nome}" volume ${volume} foi adicionado com sucesso!`,"success");
+    document.getElementById("form-registrar-livro").reset();
+    carregarLivros();
+  }catch(err){showToast("Erro ao registrar livro: "+err.message,"error");}
+});
+
+document.getElementById("form-criar-genero").addEventListener("submit", async(e)=>{
+  e.preventDefault();
+  const nomeGenero=document.getElementById("inputNovoGenero").value.trim();
+  if(!nomeGenero){showToast("Informe o nome do gênero.","warning"); return;}
+  if(generosCadastrados.includes(nomeGenero)){showToast(`Gênero ("${nomeGenero}") já existe.`,"warning"); return;}
+
+  try{
+    const proxIdGenero = await gerarProximoIdSequencial("generos");
+    await setDoc(doc(db,"generos",proxIdGenero),{nome:nomeGenero});
+    showToast(`Gênero "${nomeGenero}" foi criado com sucesso!`,"success");
+    document.getElementById("form-criar-genero").reset();
+    carregarGeneros();
+  }catch(err){showToast("Erro ao criar gênero: "+err.message,"error");}
+});
+
+document.querySelectorAll(".livros-pesquisa").forEach(input=>{
+  input.addEventListener("input", async(e)=>{
+    const termo = normalizarTexto(e.target.value);
+    const snapshot = await getDocs(collection(db,"livros"));
+    const livros = snapshot.docs.map(doc=>({...doc.data(),id:doc.id}));
+    const filtrados = livros.filter(livro=>{
+      return ["nome","autor","genero","prateleira","volume"].some(campo=>{
+        const valor = normalizarTexto(livro[campo]||"");
+        return valor.includes(termo);
+      });
+    });
+
+    const parentSection=e.target.closest(".livros-section");
+    if(parentSection.id==="secao-livros-registrados") exibirLivrosRegistrados(filtrados);
+  });
+});
+
+const turnoLeitorEl = document.getElementById("turnoLeitor");
+const turmaLeitorEl = document.getElementById("turmaLeitor");
+
+function atualizarTurmas() {
+  const turno = turnoLeitorEl.value;
+  turmaLeitorEl.innerHTML = "<option value=''>Selecione...</option>";
+  if (turmasPorTurno[turno]) {
+    turmasPorTurno[turno].forEach(turma => {
+      const option = document.createElement("option");
+      option.value = turma;
+      option.textContent = turma;
+      turmaLeitorEl.appendChild(option);
+    });
+  }
+}
+
+turnoLeitorEl.addEventListener("change", atualizarTurmas);
+
+document.getElementById("card-leitores").addEventListener("click", () => {
+  turnoLeitorEl.value = ""; // limpa turno
+  turmaLeitorEl.innerHTML = "<option value=''>Selecione...</option>"; // limpa turmas
+  Object.values(botoes).forEach(secao => document.getElementById(secao).style.display = "none");
+  document.getElementById("secao-registrar-leitor").style.display = "block";
+});
+
+async function leitorExiste(nome, turno, turma, nascimento) {
+  const snapshot = await getDocs(collection(db, "leitores"));
+  return snapshot.docs.some(doc => {
+    const data = doc.data();
+    return data.nome === nome &&
+           data.turno === turno &&
+           data.turma === turma &&
+           data.nascimento === nascimento; // compara também a data
+  });
+}
+
+document.getElementById("form-registrar-leitor").addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const nome = document.getElementById("nomeLeitor").value.trim();
+  const turno = turnoLeitorEl.value;
+  const turma = turmaLeitorEl.value;
+  const nascimento = document.getElementById("nascimentoLeitor").value;
+
+  if (!nome || !turno || !turma || !nascimento) {
     showToast("Preencha todos os campos corretamente.", "warning");
     return;
   }
 
-  if (!generosCadastrados.includes(genero)) {
-    showToast("Gênero inválido. Escolha um gênero existente.", "warning");
-    return;
-  }
-
-  if (await livroExiste(nome, autor, volume)) {
-    showToast(`Livro "${nome}" volume ${volume} já cadastrado.`, "warning");
-    return;
-  }
-
-  const livroData = { nome, autor, genero, quantidade, volume, prateleira };
-
-  try {
-    await salvarLivro(livroData);
-    showToast(`"${nome}" volume ${volume} foi adicionado com sucesso!`, "success");
-    document.getElementById("form-registrar-livro").reset();
-    carregarLivros();
-  } catch (err) {
-    showToast("Erro ao registrar livro: " + err.message, "error");
-  }
-});
-
-document.getElementById("form-criar-genero").addEventListener("submit", async (e) => {
-  e.preventDefault();
-
-  const nomeGenero = document.getElementById("inputNovoGenero").value.trim();
-
-  if (!nomeGenero) {
-    showToast("Informe o nome do gênero.", "warning");
-    return;
-  }
-
-  if (generosCadastrados.includes(nomeGenero)) {
-    showToast(`Gênero ("${nomeGenero}") já existe.`, "warning");
+  if (await leitorExiste(nome, turno, turma, nascimento)) {
+    showToast(`Leitor "${nome}" já está registrado no Sistema.`, "warning");
     return;
   }
 
   try {
-    const proxIdGenero = await gerarProximoIdSequencial("generos");
-    await setDoc(doc(db, "generos", proxIdGenero), { nome: nomeGenero });
-    showToast(`Gênero "${nomeGenero}" foi criado com sucesso!`, "success");
-    document.getElementById("form-criar-genero").reset();
-    carregarGeneros();
-  } catch (err) {
-    showToast("Erro ao criar gênero: " + err.message, "error");
-  }
-});
-
-document.querySelectorAll(".livros-pesquisa").forEach(input => {
-  input.addEventListener("input", async (e) => {
-    const termo = normalizarTexto(e.target.value);
-
-    const snapshot = await getDocs(collection(db, "livros"));
-    const livros = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
-
-    const filtrados = livros.filter(livro => {
-      const nome = normalizarTexto(livro.nome);
-      const autor = normalizarTexto(livro.autor);
-      const genero = normalizarTexto(livro.genero);
-      const prateleira = normalizarTexto(livro.prateleira || "");
-      const volume = normalizarTexto(livro.volume || "1");
-
-      return (
-        nome.includes(termo) ||
-        autor.includes(termo) ||
-        genero.includes(termo) ||
-        prateleira.includes(termo) ||
-        volume.includes(termo)
-      );
+    const proxIdLeitor = await gerarProximoIdSequencial("leitores");
+    await setDoc(doc(db, "leitores", proxIdLeitor), {
+      nome, turno, turma, nascimento, registradoEm: new Date().toISOString()
     });
 
-    const parentSection = e.target.closest(".livros-section");
-    if (parentSection.id === "secao-livros-registrados") {
-      exibirLivrosRegistrados(filtrados);
-    } else if (parentSection.id === "secao-remover-livros") {
-      exibirLivrosRemover(filtrados);
+    showToast(`Leitor "${nome}" registrado com sucesso!`, "success");
+    document.getElementById("form-registrar-leitor").reset();
+    turmaLeitorEl.innerHTML = "<option value=''>Selecione...</option>";
+  } catch (err) {
+    showToast("Erro ao registrar leitor: " + err.message, "error");
+  }
+});
+
+document.querySelectorAll("#secao-registrar-leitor .btn-cancelar").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.getElementById("form-registrar-leitor").reset();
+    turmaLeitorEl.innerHTML = "<option value=''>Selecione...</option>";
+    document.getElementById("secao-registrar-leitor").style.display = "none";
+  });
+});
+
+document.getElementById("card-leitores").addEventListener("click", () => {
+  Object.values(botoes).forEach(secao => document.getElementById(secao).style.display = "none");
+  document.getElementById("secao-registrar-leitor").style.display = "block";
+});
+
+async function carregarLeitores() {
+  const snapshot = await getDocs(collection(db, "leitores"));
+  let leitores = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
+  leitores.sort((a, b) => a.nome.localeCompare(b.nome, 'pt', { sensitivity: 'base' }));
+
+  exibirLeitoresRegistrados(leitores);
+}
+
+function criarTabelaLeitores(leitores) {
+  const tabela = document.createElement("table");
+  tabela.style.width = "100%";
+  tabela.style.borderCollapse = "collapse";
+
+  const thead = document.createElement("thead");
+  const trHead = document.createElement("tr");
+  ["Nome", "Turno", "Turma", "Nascimento", ""].forEach(texto => {
+    const th = document.createElement("th");
+    th.textContent = texto;
+    th.style.borderBottom = "2px solid #ff4444";
+    th.style.padding = "8px";
+    th.style.textAlign = "left";
+    trHead.appendChild(th);
+  });
+  thead.appendChild(trHead);
+  tabela.appendChild(thead);
+
+  const tbody = document.createElement("tbody");
+
+  leitores.forEach(leitor => {
+    const tr = document.createElement("tr");
+    tr.style.borderBottom = "1px solid #444";
+
+    function formatarDataDMY(dataStr) {
+      if (!dataStr) return "";
+      const [ano, mes, dia] = dataStr.split("-");
+      return `${dia}/${mes}/${ano}`;
     }
+
+    ["nome", "turno", "turma", "nascimento"].forEach(campo => {
+      const td = document.createElement("td");
+      if(campo === "nascimento") {
+        td.textContent = formatarDataDMY(leitor[campo]);
+      } else {
+        td.textContent = leitor[campo] || "";
+      }
+      td.style.padding = "8px";
+      tr.appendChild(td);
+    });
+
+    const tdBtn = document.createElement("td");
+    tdBtn.style.padding = "8px";
+
+    const botao = criarBotao("Remover", "btn-remover", () => {
+      abrirDialogo(`Deseja realmente remover o leitor "${leitor.nome}"?`, async () => {
+        try {
+          await deleteDoc(doc(db, "leitores", leitor.id));
+          showToast(`Leitor "${leitor.nome}" removido com sucesso!`, "success");
+          carregarLeitores();
+        } catch (err) {
+          showToast("Erro ao remover leitor: " + err.message, "error");
+        }
+      });
+    });
+
+    botao.style.display = "none";
+    tdBtn.appendChild(botao);
+    tr.appendChild(tdBtn);
+
+    aplicarEfeitoHoverELinha(tr);
+
+    tr.addEventListener("click", () => {
+      const estaSelecionado = tr.classList.contains("selecionado");
+      tbody.querySelectorAll("tr").forEach(linha => {
+        linha.classList.remove("selecionado");
+        linha.querySelectorAll("button").forEach(b => b.style.display = "none");
+        linha.style.backgroundColor = "transparent";
+      });
+      if (!estaSelecionado) {
+        tr.classList.add("selecionado");
+        botao.style.display = "inline-block";
+        tr.style.backgroundColor = "#555";
+      }
+    });
+
+    tbody.appendChild(tr);
   });
-});
 
-const todosCards = document.querySelectorAll(".card");
-todosCards.forEach(card => {
-  card.addEventListener("click", () => {
-    todosCards.forEach(c => c.classList.remove("card-selecionado"));
-    card.classList.add("card-selecionado");
-  });
-});
-
-// Chat contiua desta parte para baixo
-
-let alunosCadastrados = [];
-
-async function carregarAlunos() {
-  const snapshot = await getDocs(collection(db, "alunos"));
-  alunosCadastrados = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  tabela.appendChild(tbody);
+  return tabela;
 }
 
-const inputAluno = document.getElementById("nomeAluno");
-const modalAluno = document.getElementById("modalAluno");
-const listaAlunosModal = document.getElementById("listaAlunosModal");
-const btnFecharModalAluno = document.getElementById("fecharModalAluno");
+function exibirLeitoresRegistrados(leitores) {
+  const container = document.getElementById("lista-leitores");
+  container.innerHTML = "";
+  if (leitores.length === 0) {
+    container.innerHTML = '<p class="sem-leitores">Nenhum leitor registrado.</p>';
+    return;
+  }
+  const tabela = criarTabelaLeitores(leitores);
+  container.appendChild(tabela);
+}
 
-inputAluno.addEventListener("click", async () => {
-  await carregarAlunos();
-  preencherListaAlunosNoModal();
-  modalAluno.style.display = "flex";
+const inputPesquisarLeitor = document.querySelector("#secao-lista-leitores .leitores-pesquisa");
+const selectTurnoFiltro = document.getElementById("turnoLeitor");
+const selectTurmaFiltro = document.getElementById("turmaLeitor");
+
+async function filtrarLeitores() {
+  const termo = normalizarTexto(inputPesquisarLeitor.value);
+  const turno = selectTurnoFiltro.value;
+  const turma = selectTurmaFiltro.value;
+
+  const snapshot = await getDocs(collection(db, "leitores"));
+  let leitores = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
+
+  if (turno) leitores = leitores.filter(l => l.turno === turno);
+  if (turma) leitores = leitores.filter(l => l.turma === turma);
+
+  if (termo) {
+    leitores = leitores.filter(l => {
+      return ["nome", "turno", "turma"].some(campo => normalizarTexto(l[campo] || "").includes(termo));
+    });
+  }
+
+  leitores.sort((a, b) => a.nome.localeCompare(b.nome, 'pt', { sensitivity: 'base' }));
+
+  exibirLeitoresRegistrados(leitores);
+}
+
+inputPesquisarLeitor.addEventListener("input", filtrarLeitores);
+selectTurnoFiltro.addEventListener("change", () => {
+  atualizarTurmas();
+  filtrarLeitores();
+});
+selectTurmaFiltro.addEventListener("change", filtrarLeitores);
+
+document.getElementById("card-lista-leitores").addEventListener("click", () => {
+  Object.values(botoes).forEach(secao => document.getElementById(secao).style.display = "none");
+  document.getElementById("secao-lista-leitores").style.display = "block";
+  turnoLeitorEl.value = "";
+  turmaLeitorEl.innerHTML = "<option value=''>Selecione...</option>";
+  carregarLeitores();
 });
 
-btnFecharModalAluno.addEventListener("click", () => {
-  modalAluno.style.display = "none";
+const dialogSelecionar = document.getElementById("dialogSelecionar");
+const dialogTitulo = document.getElementById("dialogTitulo");
+const btnFecharDialog = document.getElementById("btnFecharDialog");
+const pesquisaDialog = document.getElementById("pesquisaDialog");
+const listaDialog = document.getElementById("listaDialog");
+
+let dialogCallback = null;
+
+btnFecharDialog.addEventListener("click", () => {
+  dialogSelecionar.close();
+  dialogCallback = null;
 });
 
-modalAluno.addEventListener("click", (e) => {
-  if (e.target === modalAluno) modalAluno.style.display = "none";
+pesquisaDialog.addEventListener("input", () => {
+  if (typeof dialogCallback === "function") dialogCallback(pesquisaDialog.value);
 });
 
-function preencherListaAlunosNoModal() {
-  listaAlunosModal.innerHTML = "";
+function abrirDialogoSelecionar(titulo, gerarListaCallback) {
+  dialogTitulo.textContent = titulo;
+  pesquisaDialog.value = "";
+  listaDialog.innerHTML = "";
+  dialogSelecionar.showModal();
 
-  const turnoSelecionado = document.getElementById("turnoAluno").value;
-  const turmaSelecionada = document.getElementById("turmaAluno").value;
+  dialogCallback = (filtro = "") => gerarListaCallback(filtro);
+  gerarListaCallback("");
+}
 
-  const filtrados = alunosCadastrados.filter(a => a.turno === turnoSelecionado && a.turma === turmaSelecionada);
+const nomeEmprestimoEl = document.getElementById("nomeEmprestimo");
+const turnoEmprestimoEl = document.getElementById("turnoEmprestimo");
+const turmaEmprestimoEl = document.getElementById("turmaEmprestimo");
+const livroEmprestimoEl = document.getElementById("livroEmprestimo");
 
-  if (filtrados.length === 0) {
-    listaAlunosModal.innerHTML = "<li>Nenhum aluno encontrado.</li>";
+turnoEmprestimoEl.addEventListener("change", () => {
+  const turno = turnoEmprestimoEl.value;
+  turmaEmprestimoEl.innerHTML = "<option value=''>Selecione...</option>";
+  if (turmasPorTurno[turno]) {
+    turmasPorTurno[turno].forEach(turma => {
+      const option = document.createElement("option");
+      option.value = turma;
+      option.textContent = turma;
+      turmaEmprestimoEl.appendChild(option);
+    });
+  }
+});
+
+nomeEmprestimoEl.addEventListener("click", async () => {
+  const turno = turnoEmprestimoEl.value;
+  const turma = turmaEmprestimoEl.value;
+
+  if (!turno || !turma) {
+    showToast("Selecione primeiro Turno e Turma.", "warning");
     return;
   }
 
-  filtrados.forEach(aluno => {
-    const li = document.createElement("li");
-    li.textContent = aluno.nome;
-    li.style.cursor = "pointer";
-    li.style.padding = "8px 12px";
-    li.style.borderRadius = "4px";
+  abrirDialogoSelecionar("Selecionar Leitor", async (filtro) => {
+    const snapshot = await getDocs(collection(db, "leitores"));
+    const leitores = snapshot.docs
+      .map(doc => ({ id: doc.id, ...doc.data() }))
+      .filter(l => l.turno === turno && l.turma === turma)
+      .filter(l => {
+        const termo = filtro.toLowerCase();
+        return l.nome.toLowerCase().includes(termo) || l.nascimento.includes(termo);
+      });
 
-    li.addEventListener("mouseenter", () => li.style.backgroundColor = "#444");
-    li.addEventListener("mouseleave", () => li.style.backgroundColor = "transparent");
+    listaDialog.innerHTML = "";
 
-    li.addEventListener("click", () => {
-      inputAluno.value = aluno.nome;
-      inputAluno.dataset.id = aluno.id;
-      modalAluno.style.display = "none";
-    });
+    if (!leitores.length) {
+      listaDialog.innerHTML = "<li>Nenhum leitor encontrado.</li>";
+      return;
+    }
 
-    listaAlunosModal.appendChild(li);
+    leitores.forEach(l => {
+  const li = document.createElement("li");
+  li.className = "dialog-item";
+  function formatarDataBR(dataStr) {
+    if (!dataStr) return "";
+    const [ano, mes, dia] = dataStr.split("-");
+    return `${dia}/${mes}/${ano}`;
+  }
+  const nascimentoBR = formatarDataBR(l.nascimento);
+  li.innerHTML = `
+    <div class="dialog-item-info">
+      <div class="dialog-item-title">${l.nome}</div>
+      <div class="dialog-item-subtitle">${l.turno} • Turma: ${l.turma} • ${nascimentoBR}</div>
+    </div>
+    <button class="btn-selecionar">Selecionar</button>
+  `;
+  li.querySelector(".btn-selecionar").addEventListener("click", () => {
+    nomeEmprestimoEl.value = l.nome;
+    dialogSelecionar.close();
   });
-}
+  listaDialog.appendChild(li);
+});
+  });
+});
 
-function calcularDataEntrega(dias) {
-  const hoje = new Date();
-  hoje.setDate(hoje.getDate() + Number(dias));
-  return hoje.toISOString().split("T")[0];
-}
+livroEmprestimoEl.addEventListener("click", async () => {
+  abrirDialogoSelecionar("Selecionar Livro", async (filtro) => {
+    const snapshot = await getDocs(collection(db, "livros"));
+    const livros = snapshot.docs
+      .map(doc => ({ id: doc.id, ...doc.data() }))
+      .filter(l => {
+        const termo = filtro.toLowerCase();
+        return l.nome.toLowerCase().includes(termo) ||
+               l.autor.toLowerCase().includes(termo) ||
+               l.genero.toLowerCase().includes(termo) ||
+               (l.prateleira || "").toLowerCase().includes(termo);
+      });
 
+    listaDialog.innerHTML = "";
+
+    if (!livros.length) {
+      listaDialog.innerHTML = "<li>Nenhum livro encontrado.</li>";
+      return;
+    }
+
+    livros.forEach(l => {
+      const li = document.createElement("li");
+      li.className = "dialog-item";
+      li.innerHTML = `
+        <div class="dialog-item-info">
+          <div class="dialog-item-title">${l.nome}</div>
+          <div class="dialog-item-subtitle">Autor: ${l.autor} • Prateleira: ${l.prateleira || ''} • ${l.genero} • Vol: ${l.volume || 1}</div>
+        </div>
+        <button class="btn-selecionar">Selecionar</button>
+      `;
+      li.querySelector(".btn-selecionar").addEventListener("click", () => {
+        livroEmprestimoEl.value = `${l.nome} (Vol ${l.volume || 1})`;
+        dialogSelecionar.close();
+      });
+      listaDialog.appendChild(li);
+    });
+  });
+});
+
+// ======= FORMULÁRIO REGISTRAR EMPRÉSTIMO =======
 document.getElementById("form-registrar-emprestimo").addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  const alunoNome = inputAluno.value.trim();
-  const alunoId = inputAluno.dataset.id;
-  const turno = document.getElementById("turnoAluno").value;
-  const turma = document.getElementById("turmaAluno").value;
-  const livroNome = document.getElementById("livroEmprestimo").value.trim();
-  const diasEntrega = Number(document.getElementById("diasEntrega").value);
+  const turno = turnoEmprestimoEl.value;
+  const turma = turmaEmprestimoEl.value;
+  const nomeLeitor = nomeEmprestimoEl.value.trim();
+  const livroSelecionado = livroEmprestimoEl.value.trim();
+  let diasEntrega = Number(document.getElementById("diasEntrega").value);
 
-  if (!alunoNome || !turno || !turma || !livroNome || diasEntrega <= 0) {
+  if (!turno || !turma || !nomeLeitor || !livroSelecionado || !diasEntrega) {
     showToast("Preencha todos os campos corretamente.", "warning");
     return;
   }
 
-  const dataEntrega = calcularDataEntrega(diasEntrega);
-  const dataPegou = new Date().toISOString().split("T")[0];
-
-  try {
-    await addDoc(collection(db, "emprestimos"), {
-      alunoId,
-      nomeAluno: alunoNome,
-      turno,
-      turma,
-      livro: livroNome,
-      dataPegou,
-      dataEntrega
-    });
-
-    showToast(`Empréstimo registrado: ${alunoNome} - ${livroNome}`, "success");
-    document.getElementById("form-registrar-emprestimo").reset();
-  } catch (err) {
-    showToast("Erro ao registrar empréstimo: " + err.message, "error");
-  }
-});
-
-const inputDataNasc = document.getElementById("dataNascimento");
-inputDataNasc.addEventListener("input", e => {
-  let valor = e.target.value.replace(/\D/g, ""); // Remove não-dígitos
-  if (valor.length > 2) valor = valor.slice(0,2) + '/' + valor.slice(2);
-  if (valor.length > 5) valor = valor.slice(0,5) + '/' + valor.slice(5,9);
-  e.target.value = valor;
-});
-
-document.getElementById("form-registrar-leitor").addEventListener("submit", async e => {
-  e.preventDefault();
-
-  const nome = document.getElementById("nomeAlunoForm").value.trim();
-  const turno = document.getElementById("turnoAlunoForm").value;
-  const turma = document.getElementById("turmaAlunoForm").value;
-  const dataNascimento = document.getElementById("dataNascimento").value;
-  const email = document.getElementById("emailAluno").value.trim();
-  const senha = document.getElementById("senhaAluno").value;
-
-  if (!nome || !turno || !turma || !dataNascimento || !email || !senha) {
-    showToast("Preencha todos os campos.", "warning");
+  if (diasEntrega > 30) {
+    showToast("O máximo permitido é 30 dias para entrega.", "warning");
     return;
   }
 
-  try {
-    const userCred = await createUserWithEmailAndPassword(auth, email, senha);
-    await setDoc(doc(db, "alunos", userCred.user.uid), {
-      nome,
-      turno,
-      turma,
-      dataNascimento,
-      email,
-      senha
-    });
+  // Data atual
+  const dataEmprestimo = new Date();
+  const dataEntrega = new Date();
+  dataEntrega.setDate(dataEmprestimo.getDate() + diasEntrega);
 
-    showToast(`Aluno ${nome} cadastrado com sucesso!`, "success");
-    document.getElementById("form-registrar-leitor").reset();
-    carregarAlunos();
-  } catch (err) {
-    showToast("Erro ao cadastrar aluno: " + err.message, "error");
+  // Formatar datas no padrão BR DD/MM/AAAA
+  function formatarDataBR(data) {
+    const dia = String(data.getDate()).padStart(2, '0');
+    const mes = String(data.getMonth() + 1).padStart(2, '0');
+    const ano = data.getFullYear();
+    return `${dia}/${mes}/${ano}`;
   }
+
+  const emprestimoData = {
+    nome: nomeLeitor,
+    turno,
+    turma,
+    livro: livroSelecionado,
+    diasEntrega,
+    dataEmprestimo: formatarDataBR(dataEmprestimo),
+    dataEntrega: formatarDataBR(dataEntrega),
+    registradoEm: new Date().toISOString()
+  };
+
+  try {
+  const proxIdEmprestimo = await gerarProximoIdSequencial("emprestimos");
+  await setDoc(doc(db, "emprestimos", proxIdEmprestimo), emprestimoData);
+  showToast(`Empréstimo do livro "${livroSelecionado}" registrado com sucesso!`, "success");
+
+  // Resetar formulário
+  document.getElementById("form-registrar-emprestimo").reset();
+  turmaEmprestimoEl.innerHTML = "<option value=''>Selecione...</option>";
+
+  // ✅ Atualizar tabela automaticamente
+  carregarEmprestimos();
+  carregarNotificacoes();
+
+} catch (err) {
+  showToast("Erro ao registrar empréstimo: " + err.message, "error");
+}
+
 });
 
-function exibirLeitores() {
-  const container = document.getElementById("lista-leitores");
-  container.innerHTML = "";
-  alunosCadastrados.forEach(aluno => {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${aluno.nome}</td>
-      <td>${aluno.dataNascimento}</td>
-      <td>${aluno.email}</td>
-      <td><span class="senha" style="cursor:pointer">${"*".repeat(aluno.senha.length)}</span></td>
-      <td>
-        <button class="btn-editar">Editar</button>
-        <button class="btn-remover">Remover</button>
-      </td>
-    `;
-    const spanSenha = tr.querySelector(".senha");
-    spanSenha.addEventListener("click", () => {
-      spanSenha.textContent = aluno.senha;
-    });
+// Seletores
+const pesquisaEmprestimosEl = document.getElementById("pesquisaEmprestimos");
+const turnoEmprestimoFiltroEl = document.getElementById("turnoEmprestimoFiltro");
+const turmaEmprestimoFiltroEl = document.getElementById("turmaEmprestimoFiltro");
 
-    tr.querySelector(".btn-remover").addEventListener("click", async () => {
-      const confirmDel = confirm(`Deseja remover ${aluno.nome}?`);
-      if (!confirmDel) return;
-      try {
-        await deleteDoc(doc(db, "alunos", aluno.id));
-        showToast("Aluno removido!", "success");
-        carregarAlunos();
-      } catch (err) {
-        showToast("Erro: " + err.message, "error");
-      }
+// Atualizar turmas filtro de empréstimos
+function atualizarTurmasFiltro(turno) {
+  turmaEmprestimoFiltroEl.innerHTML = "<option value=''>Todos</option>";
+  if (turmasPorTurno[turno]) {
+    turmasPorTurno[turno].forEach(turma => {
+      const opt = document.createElement("option");
+      opt.value = turma;
+      opt.textContent = turma;
+      turmaEmprestimoFiltroEl.appendChild(opt);
     });
-    tr.querySelector(".btn-editar").addEventListener("click", () => {
-    });
+  }
+}
 
-    container.appendChild(tr);
-  });
+turnoEmprestimoFiltroEl.addEventListener("change", () => {
+  atualizarTurmasFiltro(turnoEmprestimoFiltroEl.value);
+  carregarEmprestimos();
+});
+turmaEmprestimoFiltroEl.addEventListener("change", carregarEmprestimos);
+pesquisaEmprestimosEl.addEventListener("input", carregarEmprestimos);
+
+// ======= UTILITÁRIOS =======
+function parseDataBR(dataStr) {
+  if (!dataStr) return null;
+  const [dia, mes, ano] = dataStr.split("/").map(Number);
+  return new Date(ano, mes - 1, dia);
+}
+
+function calcularDiasRestantes(dataEntrega) {
+  const hoje = new Date();
+  // Zerando horas/minutos/segundos
+  hoje.setHours(0,0,0,0);
+  dataEntrega.setHours(0,0,0,0);
+  
+  const diff = (dataEntrega - hoje) / (1000 * 60 * 60 * 24);
+  return Math.ceil(diff);
 }
 
 
+// ======= CRIAR TABELA DE EMPRÉSTIMOS =======
+function criarTabelaEmprestimos(emprestimos) {
+  const tabela = document.createElement("table");
+  tabela.style.width = "100%";
+  tabela.style.borderCollapse = "collapse";
+
+  const cabecalho = ["Nome Leitor", "Nome Livro", "Turno • Turma", "Data Pego", "Data Entrega", "Dias", "Ações"];
+  const thead = document.createElement("thead");
+  const trHead = document.createElement("tr");
+  cabecalho.forEach(texto => {
+    const th = document.createElement("th");
+    th.textContent = texto;
+    th.style.borderBottom = "2px solid #ff4444";
+    th.style.padding = "8px";
+    th.style.textAlign = "left";
+    trHead.appendChild(th);
+  });
+  thead.appendChild(trHead);
+  tabela.appendChild(thead);
+
+  const tbody = document.createElement("tbody");
+
+  emprestimos.forEach(e => {
+    const tr = document.createElement("tr");
+    tr.style.borderBottom = "1px solid #444";
+
+    const dataEntregaObj = parseDataBR(e.dataEntrega);
+    const diasRestantes = calcularDiasRestantes(dataEntregaObj);
+
+    // Preencher células
+    const tdNome = document.createElement("td"); tdNome.textContent = e.nome; tdNome.style.padding="8px"; tr.appendChild(tdNome);
+    const tdLivro = document.createElement("td"); tdLivro.textContent = e.livro; tdLivro.style.padding="8px"; tr.appendChild(tdLivro);
+    const tdTurnoTurma = document.createElement("td"); tdTurnoTurma.textContent = `${e.turno} • ${e.turma}`; tdTurnoTurma.style.padding="8px"; tr.appendChild(tdTurnoTurma);
+    const tdDataEmprestimo = document.createElement("td"); tdDataEmprestimo.textContent = e.dataEmprestimo || ""; tdDataEmprestimo.style.padding="8px"; tr.appendChild(tdDataEmprestimo);
+    const tdDataEntrega = document.createElement("td"); tdDataEntrega.textContent = e.dataEntrega || ""; tdDataEntrega.style.padding="8px"; tr.appendChild(tdDataEntrega);
+    const tdDias = document.createElement("td"); tdDias.textContent = diasRestantes < 0 ? "Atrasado" : `${diasRestantes} dias`; tdDias.style.padding="8px"; tr.appendChild(tdDias);
+
+    // Botão Entregue
+    const tdAcoes = document.createElement("td"); tdAcoes.style.padding="8px";
+    const btnEntregue = criarBotao("Entregue", "btn-entregue", async () => {
+      try {
+        await deleteDoc(doc(db, "emprestimos", e.id));
+        showToast(`Empréstimo de "${e.livro}" entregue!`, "success");
+        carregarEmprestimos();
+        carregarNotificacoes();
+      } catch(err) { showToast("Erro: "+err.message, "error"); }
+    });
+    btnEntregue.style.display = "none";
+    tdAcoes.appendChild(btnEntregue);
+    tr.appendChild(tdAcoes);
+
+    aplicarEfeitoHoverELinha(tr);
+    tr.addEventListener("click", () => {
+      const selecionado = tr.classList.contains("selecionado");
+      tbody.querySelectorAll("tr").forEach(linha => {
+        linha.classList.remove("selecionado");
+        linha.querySelectorAll("button").forEach(b => b.style.display="none");
+        linha.style.backgroundColor="transparent";
+      });
+      if (!selecionado) {
+        tr.classList.add("selecionado");
+        btnEntregue.style.display="inline-block";
+        tr.style.backgroundColor="#555";
+      }
+    });
+
+    tbody.appendChild(tr);
+  });
+
+  tabela.appendChild(tbody);
+  return tabela;
+}
+
+// ======= CRIAR TABELA DE NOTIFICAÇÕES =======
+function criarTabelaNotificacoes(emprestimos) {
+  const tabela = document.createElement("table");
+  tabela.style.width = "100%";
+  tabela.style.borderCollapse = "collapse";
+
+  const cabecalho = ["Nome Leitor", "Nome Livro", "Turno • Turma", "Data Entrega", "Status", "Ações"];
+  const thead = document.createElement("thead");
+  const trHead = document.createElement("tr");
+  cabecalho.forEach(texto => {
+    const th = document.createElement("th");
+    th.textContent = texto;
+    th.style.borderBottom = "2px solid #ff4444";
+    th.style.padding = "8px";
+    th.style.textAlign = "left";
+    trHead.appendChild(th);
+  });
+  thead.appendChild(trHead);
+  tabela.appendChild(thead);
+
+  const tbody = document.createElement("tbody");
+  const hoje = new Date();
+
+  emprestimos.forEach(emp => {
+    const tr = document.createElement("tr");
+    tr.style.borderBottom = "1px solid #444";
+
+    ["nome","livro"].forEach(campo => {
+      const td = document.createElement("td");
+      td.textContent = emp[campo] || "";
+      td.style.padding="8px";
+      tr.appendChild(td);
+    });
+
+    const tdTurnoTurma = document.createElement("td");
+    tdTurnoTurma.textContent = `${emp.turno} • ${emp.turma}`;
+    tdTurnoTurma.style.padding="8px";
+    tr.appendChild(tdTurnoTurma);
+
+    const tdEntrega = document.createElement("td");
+    tdEntrega.textContent = emp.dataEntrega || "";
+    tdEntrega.style.padding="8px";
+    tr.appendChild(tdEntrega);
+
+    const tdStatus = document.createElement("td");
+    const dataEntregaObj = parseDataBR(emp.dataEntrega);
+    tdStatus.textContent = dataEntregaObj < hoje ? "Não Entregue" : "Perto de Entregar";
+    if(dataEntregaObj < hoje) tdStatus.style.color = "red";
+    tdStatus.style.padding="8px";
+    tr.appendChild(tdStatus);
+
+    const tdAcoes = document.createElement("td");
+    tdAcoes.style.padding="8px";
+    const btnEntregue = criarBotao("Entregue", "btn-entregue", async () => {
+      try {
+        await deleteDoc(doc(db,"emprestimos",emp.id));
+        showToast(`Empréstimo de "${emp.livro}" por "${emp.nome}" finalizado!`, "success");
+        carregarEmprestimos();
+        carregarNotificacoes();
+      } catch(err){ showToast("Erro: "+err.message,"error"); }
+    });
+    btnEntregue.style.display="none";
+    tdAcoes.appendChild(btnEntregue);
+    tr.appendChild(tdAcoes);
+
+    aplicarEfeitoHoverELinha(tr);
+    tr.addEventListener("click", () => {
+      const estaSelecionado = tr.classList.contains("selecionado");
+      tbody.querySelectorAll("tr").forEach(linha => {
+        linha.classList.remove("selecionado");
+        linha.querySelectorAll("button").forEach(b => b.style.display="none");
+        linha.style.backgroundColor="transparent";
+      });
+      if(!estaSelecionado){
+        tr.classList.add("selecionado");
+        btnEntregue.style.display="inline-block";
+        tr.style.backgroundColor="#555";
+      }
+    });
+
+    tbody.appendChild(tr);
+  });
+
+  tabela.appendChild(tbody);
+  return tabela;
+}
+
+// ======= CARREGAR EMPRÉSTIMOS =======
+async function carregarEmprestimos() {
+  const turno = turnoEmprestimoFiltroEl.value;
+  const turma = turmaEmprestimoFiltroEl.value;
+  const termo = pesquisaEmprestimosEl.value.trim().toLowerCase();
+
+  const snapshot = await getDocs(collection(db, "emprestimos"));
+  let emprestimos = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+  // Filtrar por turno e turma se selecionado
+  if (turno) emprestimos = emprestimos.filter(e => e.turno === turno);
+  if (turma) emprestimos = emprestimos.filter(e => e.turma === turma);
+
+  // Filtrar por pesquisa
+  if (termo) {
+    emprestimos = emprestimos.filter(e => 
+      e.nome.toLowerCase().includes(termo) ||
+      e.livro.toLowerCase().includes(termo) ||
+      e.turno.toLowerCase().includes(termo) ||
+      e.turma.toLowerCase().includes(termo)
+    );
+  }
+
+  // Ordenar por data de empréstimo (opcional)
+  emprestimos.sort((a, b) => parseDataBR(a.dataEmprestimo) - parseDataBR(b.dataEmprestimo));
+
+  // Exibir na tabela
+  const container = document.getElementById("lista-emprestimos");
+  container.innerHTML = "";
+  if (emprestimos.length === 0) {
+    container.innerHTML = '<p class="sem-emprestimos">Nenhum empréstimo registrado.</p>';
+    return;
+  }
+  const tabela = criarTabelaEmprestimos(emprestimos);
+  container.appendChild(tabela);
+}
+
+// ======= CARREGAR NOTIFICAÇÕES =======
+async function carregarNotificacoes() {
+  const snapshot = await getDocs(collection(db, "emprestimos"));
+  let emprestimos = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+  const hoje = new Date();
+
+  // Filtrar apenas os empréstimos que faltam 3 dias ou menos
+  const notificacoes = emprestimos.filter(e => {
+    if (!e.dataEntrega) return false;
+    const dataEntregaObj = parseDataBR(e.dataEntrega);
+    const diasRestantes = calcularDiasRestantes(dataEntregaObj);
+    return diasRestantes <= 3 && diasRestantes >= 0;
+  });
+
+  const container = document.getElementById("lista-notificacoes");
+  container.innerHTML = "";
+
+  if (notificacoes.length === 0) {
+    container.innerHTML = '<p class="sem-notificacoes">Não há notificações ainda.</p>';
+    return;
+  }
+
+  // ✅ agora usamos a função já criada
+  const tabela = criarTabelaNotificacoes(notificacoes);
+  container.appendChild(tabela);
+}
+
+
+// ======= CARREGAMENTO INICIAL =======
 carregarGeneros();
 carregarLivros();
-
+carregarLeitores();
+carregarEmprestimos();
+carregarNotificacoes();

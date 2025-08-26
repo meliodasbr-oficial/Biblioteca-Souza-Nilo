@@ -97,6 +97,7 @@ h1 {
 
 .card:hover {
   transform: scale(1.05);
+  background-color: #00173f;
 }
 
 .livros-section {
@@ -169,7 +170,6 @@ tbody{
   opacity: 0.7;
 }
 
-/* Responsividade */
 @media (max-width: 600px) {
   .painel-conteudo {
     padding: 20px;
@@ -186,7 +186,6 @@ tbody{
   }
 }
 
-/* Itens livro simulado */
 .item-livro {
   display: flex;
   justify-content: space-between;
@@ -218,8 +217,7 @@ tbody{
   display: inline-block;
 }
 
-/* Seção registrar livro */
-#secao-registrar-livro {
+#secao-registrar-livro, #secao-registrar-leitor, #secao-registrar-emprestimo, #secao-criar-genero  {
   margin-top: 20px;
   max-width: 900px;
   margin-left: auto;
@@ -260,11 +258,22 @@ tbody{
   transition: background-color 0.3s;
 }
 
+#form-registrar-leitor button {
+  background-color: #ff4444;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 16px;
+  padding: 10px 20px;
+  transition: background-color 0.3s;
+}
+
 #form-registrar-livro button:hover {
   background-color: #cc0000;
 }
 
-/* === TOASTS === */
 #toast-container {
   position: fixed;
   top: 20px;
@@ -432,8 +441,8 @@ tbody{
 #modalGenero {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.7); /* sombra escura */
-  display: none; /* por padrão escondido */
+  background: rgba(0,0,0,0.7);
+  display: none;
   justify-content: center;
   align-items: center;
   z-index: 1000;
@@ -441,14 +450,14 @@ tbody{
 }
 
 #modalGenero .modal-content {
-  background-color: #222; /* fundo escuro */
+  background-color: #222;
   padding: 20px;
   border-radius: 8px;
   width: 320px;
   max-height: 70vh;
   overflow-y: auto;
   box-shadow: 0 0 15px rgba(255, 68, 68, 0.5);
-  color: #eee; /* texto claro */
+  color: #eee;
   position: relative;
 }
 
@@ -484,13 +493,13 @@ tbody{
 }
 
 #listaGenerosModal li:hover {
-  background-color: #ff4444; /* destaque vermelho */
+  background-color: #ff4444;
   color: #fff;
 }
 
 
 .btn-remover {
-  background-color: #d9534f; /* vermelho bootstrap */
+  background-color: #d9534f;
   border: none;
   color: white;
   padding: 6px 12px;
@@ -548,7 +557,6 @@ tbody{
 .livros-card th, .livros-card td {
   border: 1px solid rgba(255,255,255,0.3);
   padding: 8px;
-  text-align: center;
 }
 
 .livros-card th {
@@ -579,47 +587,372 @@ button:hover {
   color: #fff;
 }
 
+#form-registrar-leitor label {
+  display: block;
+  margin-bottom: 15px;
+  font-weight: 600;
+  font-size: 15px;
+}
 
-/* Modal Aluno e Gênero */
-.modal {
-  position: fixed;
-  top: 0;
-  left: 0;
+#form-registrar-leitor input, select {
   width: 100%;
-  height: 100%;
-  background-color: rgba(0,0,0,0.7);
-  display: none;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: none;
+  font-size: 15px;
+  box-sizing: border-box;
 }
 
-.modal-content {
-  background-color: #222;
+#form-registrar-emprestimo label {
+  display: block;
+  margin-bottom: 15px;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+#form-registrar-emprestimo input, select {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: none;
+  font-size: 15px;
+  box-sizing: border-box;
+}
+
+#dialogoConfirmacao {
+  border: none;
+  border-radius: 12px;
+  padding: 25px 30px;
+  min-width: 320px;
+  max-width: 90%;
+  background: linear-gradient(135deg, #001f3f, #004080);
   color: #fff;
-  padding: 20px;
-  border-radius: 10px;
-  width: 320px;
-  max-height: 80vh;
-  overflow-y: auto;
+  text-align: center;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+  opacity: 0;
+  transform: translateY(-50px) scale(0.8);
+  transition: transform 0.3s ease, opacity 0.3s ease;
 }
 
-.modal-content ul {
+#dialogoConfirmacao[open] {
+  animation: abrirDialogo 0.35s forwards;
+}
+
+@keyframes abrirDialogo {
+  0% {
+    opacity: 0;
+    transform: translateY(-50px) scale(0.8);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(10px) scale(1.05);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+#dialogoConfirmacao::backdrop {
+  background-color: rgba(0,0,0,0.6);
+  backdrop-filter: blur(2px);
+}
+
+.dialogoBotoes {
+  margin-top: 25px;
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
+
+.dialogoBotoes button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 14px;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+#btnSimDialog {
+  background: linear-gradient(90deg, #00c6ff, #0072ff);
+}
+#btnSimDialog:hover {
+  transform: translateY(-2px);
+  background: linear-gradient(90deg, #00aaff, #005bcc);
+}
+
+#btnCancelarDialog {
+  background: linear-gradient(90deg, #aaa, #888);
+}
+#btnCancelarDialog:hover {
+  transform: translateY(-2px);
+  background: linear-gradient(90deg, #888, #555);
+}
+
+.leitores-pesquisa {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  border: none;
+  font-size: 16px;
+  max-width: 300px;
+}
+
+.leitores-topo {
+  display: flex;
+  flex-wrap: wrap; 
+  gap: 10px;        
+  align-items: center;  
+  margin-bottom: 15px;
+}
+
+.leitores-topo select {
+  padding: 12px 10px;
+  border-radius: 8px;
+}
+
+#lista-leitores {
+  background-color: rgba(255, 255, 255, 0.05);
+  padding: 15px;
+  border-radius: 8px;
+  min-height: 150px;
+  max-height: 550px;
+  overflow-y: auto;
+  color: white;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+}
+
+.sem-leitores {
+  text-align: center;
+  font-style: italic;
+  opacity: 0.7;
+}
+
+dialog#dialogSelecionar {
+  border: none;
+  border-radius: 16px;
+  width: min(680px, 92vw);
+  padding: 20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+}
+
+dialog::backdrop {
+  background: rgba(0,0,0,0.4);
+  backdrop-filter: blur(2px);
+}
+
+.dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.dialog-header h3 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.dialog-search {
+  display: flex;
+  margin-bottom: 12px;
+}
+
+#pesquisaDialog {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 1px solid #ccc;
+  font-size: 16px;
+}
+
+.dialog-lista {
+  max-height: 50vh;
+  overflow-y: auto;
   list-style: none;
   padding: 0;
   margin: 0;
 }
 
-.modal-content li {
-  border-bottom: 1px solid #444;
-  padding: 8px;
+.dialog-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.dialog-item:last-child { margin-bottom: 0; }
+
+.dialog-item-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.dialog-item-title {
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.dialog-item-subtitle {
+  font-size: 13px;
+  color: #555;
+  margin-top: 2px;
+}
+
+.btn-selecionar {
+  background: #6b3bdc;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 8px;
   cursor: pointer;
 }
 
-.modal-content li:hover {
-  background-color: #555;
+.btn-danger {
+  background: #f44336;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
 }
 
-#modalAluno .modal-content, #modalGenero .modal-content {
-  background-color: #1f1f1f;
+.botoes-form {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.btn-cancelar {
+  background: #ddd;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.emprestimos-topo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+#pesquisaEmprestimos{
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  border: none;
+  font-size: 16px;
+  max-width: 300px;
+}
+
+.emprestimos-topo select {
+  padding: 12px 10px;
+  border-radius: 8px;
+}
+
+#lista-emprestimos {
+  background-color: rgba(255, 255, 255, 0.05);
+  padding: 15px;
+  border-radius: 8px;
+  min-height: 150px;
+  max-height: 550px;
+  overflow-y: auto;
+  color: white;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+}
+
+.sem-emprestimos {
+  text-align: center;
+  font-style: italic;
+  opacity: 0.7;
+}
+
+#lista-notificacoes {
+  background-color: rgba(255, 255, 255, 0.05);
+  padding: 15px;
+  border-radius: 8px;
+  min-height: 150px;
+  max-height: 550px;
+  overflow-y: auto;
+  color: white;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+}
+
+.sem-notificacoes {
+  text-align: center;
+  font-style: italic;
+  opacity: 0.7;
+}
+
+#secao-ranking {
+  margin-top: 20px;
+  padding: 20px;
+}
+
+.ranking-card {
+  background: #1e1e1e;
+  color: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+}
+
+.ranking-card h2 {
+  margin-bottom: 15px;
+  font-size: 1.5rem;
+  color: #ff4444;
+}
+
+.ranking-filtros {
+  margin-bottom: 15px;
+}
+.ranking-filtros select {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid #444;
+  background: #2a2a2a;
+  color: #fff;
+}
+
+.ranking-tabela {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+.ranking-tabela th, 
+.ranking-tabela td {
+  padding: 10px;
+  border-bottom: 1px solid #444;
+  text-align: left;
+}
+.ranking-tabela th {
+  background: #2c2c2c;
+  color: #ff4444;
+  font-weight: bold;
+}
+
+.ranking-tabela tr.ouro td {
+  background: #ffd70033;
+  font-weight: bold;
+}
+.ranking-tabela tr.prata td {
+  background: #c0c0c033;
+  font-weight: bold;
+}
+.ranking-tabela tr.bronze td {
+  background: #cd7f3233;
+  font-weight: bold;
 }

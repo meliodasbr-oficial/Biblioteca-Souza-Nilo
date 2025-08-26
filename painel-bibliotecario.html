@@ -18,21 +18,20 @@
   </header>
 
   <main class="painel-conteudo">
-    <div class="card" id="card-registrar">📚 Cadastrar Livro</div>
-    <div class="card" id="card-leitor">📂 Cadastrar Leitor</div>
-    <div class="card" id="card-cadastrar-emprestimo">📂 Cadastrar Livros Emprestado</div>
-    <div class="card" id="card-criar">📂 Criar Gêneros</div>
-    <div class="card" id="card-livros">📖 Livros Registrados</div>
-    <div class="card" id="card-emprestados">📂 Livros Emprestados</div>
-    <div class="card" id="card-ranking">📂 Ranking</div>
-    <div class="card" id="card-remover">🗑️ Remover Livro</div>
-    <div class="card" id="card-cadastrados">📂 Leitores Cadastrados</div>
-    <div class="card" id="card-notificacao">🔔 Notificações</div>
+    <div class="card" id="card-registrar">📚 Catalogar Livro</div>
+    <div class="card" id="card-leitores">👥 Registrar Leitor</div>
+    <div class="card" id="card-emprestimo">📑 Registrar Empréstimo</div>
+    <div class="card" id="card-criar">📂 Criar Gênero</div>
+    <div class="card" id="card-livros">📖 Livros Catalogados</div>
+    <div class="card" id="card-lista-leitores">📋 Lista de Leitores</div>
+    <div class="card" id="card-lista-emprestimos">📂 Lista de Empréstimos</div>
+    <div class="card" id="card-ranking">🏆 Ranking</div>
+    <div class="card" id="card-notificacoes">🔔 Notificações</div>
   </main>
 
   <section class="livros-section" id="secao-livros-registrados" style="display: none;">
     <div class="livros-card">
-      <h2>Livros Registrados</h2>
+      <h2>Livros Catalogados</h2>
       <div class="livros-topo">
         <input type="text" placeholder="Pesquisar livros..." class="livros-pesquisa" />
       </div>
@@ -44,7 +43,7 @@
 
   <section class="livros-section" id="secao-registrar-livro" style="display: none;">
     <div class="livros-card">
-      <h2>Registrar Novo Livro</h2>
+      <h2>Catalogar Livro</h2>
       <form id="form-registrar-livro">
         <label>Nome:<br />
           <input type="text" id="nomeLivro" required placeholder="Nome do Livro" />
@@ -57,19 +56,19 @@
         <label>Gênero: <span style="color:#ff4444">*</span><br />
           <input type="text" id="generoLivro" readonly placeholder="Clique para selecionar o gênero" required />
         </label>
-        
-<div id="modalGenero" style="display:none;">
-  <div class="modal-conteudo">
-    <button id="fecharModalGenero" aria-label="Fechar">&times;</button>
-    <h3>Selecione um gênero</h3>
-    <ul id="listaGenerosModal"></ul>
-  </div>
-</div>
+
+        <div id="modalGenero" style="display:none;">
+          <div class="modal-conteudo">
+            <button id="fecharModalGenero" aria-label="Fechar">&times;</button>
+            <h3>Selecione um gênero</h3>
+            <ul id="listaGenerosModal"></ul>
+          </div>
+        </div>
 
         <label>Número da Prateleira:<br />
-          <input type="text" id="numeroPrateleira" placeholder="Local onde o livro está" />
+          <input type="text" id="prateleiraLivro" placeholder="Local onde o livro está" />
         </label>
-  
+
         <label>Volume (opcional):<br />
           <input type="text" id="volumeLivro" placeholder="Deixe vazio se não houver" />
         </label>
@@ -86,18 +85,6 @@
     </div>
   </section>
 
-  <section class="livros-section" id="secao-remover-livros" style="display: none;">
-    <div class="livros-card">
-      <h2>Remover Livro</h2>
-      <div class="livros-topo">
-        <input type="text" placeholder="Pesquisar livros..." class="livros-pesquisa" />
-      </div>
-      <div class="livros-lista" id="lista-livros-remover">
-        <p class="sem-livros">Nenhum livro disponível para remoção.</p>
-      </div>
-    </div>
-  </section>
-
   <section class="livros-section" id="secao-criar-genero" style="display: none;">
     <div class="livros-card">
       <h2>Criar Novo Gênero</h2>
@@ -106,7 +93,6 @@
         <input type="text" id="inputNovoGenero" placeholder="Digite o nome do gênero" required />
         <div style="margin-top: 10px; display: flex; gap: 10px;">
           <button type="submit">Adicionar</button>
-          <button type="button" id="btn-cancelar-genero">Cancelar</button>
         </div>
       </form>
 
@@ -119,152 +105,154 @@
     </div>
   </section>
 
-<section class="livros-section" id="secao-registrar-leitor" style="display:none;">
-  <div class="livros-card">
-    <h2>Cadastrar Leitor</h2>
-    <form id="form-cadastrar-leitor">
-      <label>Nome Completo:<input type="text" id="nomeLeitor" required/></label>
+  <section class="livros-section" id="secao-registrar-leitor" style="display:none;">
+    <div class="livros-card">
+      <h2>Registrar Leitor</h2>
+      <form id="form-registrar-leitor">
+        <label>Nome Completo:<br><input type="text" id="nomeLeitor" required placeholder="Nome do Leitor"></label>
+        <label>Turno:<br>
+          <select id="turnoLeitor" required>
+            <option value="">Selecione...</option>
+            <option value="Manhã">Manhã</option>
+            <option value="Tarde">Tarde</option>
+            <option value="Noite">Noite</option>
+          </select>
+        </label>
+        <label>Turma:<br><select id="turmaLeitor" required></select></label>
+        <label>Data de Nascimento:<br><input type="date" id="nascimentoLeitor" required></label>
+        <div class="botoes-form">
+          <button type="submit">Registrar</button>
+          <button type="button" class="btn-cancelar">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </section>
 
-      <label>Turno:
-        <select id="turnoLeitor" required>
-          <option value="">Selecione</option>
-          <option value="Manha">Manhã</option>
+<section class="livros-section" id="secao-registrar-emprestimo" style="display:block;">
+  <div class="livros-card">
+    <h2>Registrar Empréstimo</h2>
+    <form id="form-registrar-emprestimo">
+      <label>Turno:<br>
+        <select id="turnoEmprestimo" required>
+          <option value="">Selecione...</option>
+          <option value="Manhã">Manhã</option>
           <option value="Tarde">Tarde</option>
           <option value="Noite">Noite</option>
         </select>
       </label>
+      <label>Turma:<br><select id="turmaEmprestimo" required></select></label>
+      <label>Nome Completo:<br>
+        <input type="text" id="nomeEmprestimo" readonly placeholder="Clique para selecionar">
+      </label>
+      <label>Livro:<br>
+        <input type="text" id="livroEmprestimo" readonly placeholder="Clique para selecionar">
+      </label>
+      <label>Dias para entrega (máx 30):<br>
+        <input type="number" id="diasEntrega" min="1" max="30" required>
+      </label>
+      <div class="botoes-form">
+        <button type="submit">Registrar</button>
+        <button type="button" class="btn-cancelar">Cancelar</button>
+      </div>
+    </form>
+  </div>
+</section>
 
+  <section class="livros-section" id="secao-lista-leitores" style="display:none;">
+    <div class="livros-card">
+      <h2>Lista de Leitores</h2>
+      <div class="leitores-topo">
+        <label>Pesquisar Leitor:<input type="text" placeholder="Pesquisar Leitores..." class="leitores-pesquisa" /></label>
+        <label>Turno:
+            <select id="turnoLeitor" required>
+              <option value="">Selecione...</option>
+              <option value="Manhã">Manhã</option>
+              <option value="Tarde">Tarde</option>
+              <option value="Noite">Noite</option>
+            </select>
+          </label>
+          <label>Turma:
+            <select id="turmaLeitor" required></select>
+          </label>
+        </div>
+      <div id="lista-leitores" id="lista-leitores-registrados">
+        <p class="sem-leitores">Nenhum leitor registrado.</p>
+      </div>
+    </div>
+  </section>
+
+<section class="livros-section" id="secao-lista-emprestimos" style="display:none;">
+  <div class="livros-card">
+    <h2>Lista de Empréstimos</h2>
+
+    <div class="emprestimos-topo">
+      <label>Pesquisar Leitor:<input type="text" id="pesquisaEmprestimos" placeholder="Pesquisar..." /></label>
+      <label>Turno:
+        <select id="turnoEmprestimoFiltro">
+          <option value="">Todos</option>
+          <option value="Manhã">Manhã</option>
+          <option value="Tarde">Tarde</option>
+          <option value="Noite">Noite</option>
+        </select>
+      </label>
       <label>Turma:
-        <select id="turmaLeitor" required></select>
+        <select id="turmaEmprestimoFiltro">
+          <option value="">Todos</option>
+        </select>
       </label>
+    </div>
 
-      <label>Data de Nascimento:
-        <input type="text" id="dataNascimento" placeholder="DD/MM/AAAA" required/>
-      </label>
-
-      <label>Email:<input type="email" id="emailLeitor" required/></label>
-      <label>Senha:<input type="password" id="senhaLeitor" required/></label>
-
-      <div style="margin-top:10px; display:flex; gap:10px;">
-        <button type="submit">Cadastrar</button>
-        <button type="button" id="btn-cancelar-leitor">Cancelar</button>
-      </div>
-    </form>
+    <div id="lista-emprestimos"></div>
   </div>
 </section>
 
-<section class="livros-section" id="secao-registrar-emprestimo" style="display:none;">
-  <div class="livros-card">
-    <h2>Cadastrar Livro Emprestado</h2>
-    <form id="form-cadastrar-emprestimo">
-      <label>Turno:<select id="turnoEmprestimo"></select></label>
-      <label>Turma:<select id="turmaEmprestimo"></select></label>
-      <label>Aluno:
-        <input type="text" id="nomeAluno" placeholder="Buscar aluno" />
-        <ul id="listaAlunosBusca"></ul>
-      </label>
-      <label>Livro:
-        <input type="text" id="livroEmprestimo" placeholder="Buscar livro" />
-        <ul id="listaLivrosBusca"></ul>
-      </label>
-      <label>Quantidade de dias para entrega:
-        <input type="number" id="diasEntrega" min="1"/>
-      </label>
-      <div style="margin-top:10px; display:flex; gap:10px;">
-        <button type="submit">Cadastrar</button>
-        <button type="button" id="btn-cancelar-emprestimo">Cancelar</button>
-      </div>
-    </form>
-  </div>
-</section>
+  <section class="livros-section" id="secao-notificacoes" style="display:none;">
+    <div class="livros-card">
+      <h2>Notificações</h2>
+      <div id="lista-notificacoes"></div>
+    </div>
+  </section>
 
-<section class="livros-section" id="secao-livros-emprestados" style="display:none;">
-  <div class="livros-card">
-    <h2>Livros Emprestados</h2>
-    <label>Turno:<select id="filtroTurnoEmprestados"></select></label>
-    <label>Turma:<select id="filtroTurmaEmprestados"></select></label>
-    <table id="tabelaEmprestados">
-      <thead>
-        <tr>
-          <th>Nome</th>
-          <th>Turno</th>
-          <th>Turma</th>
-          <th>Livro</th>
-          <th>Data Pegou</th>
-          <th>Data Entrega</th>
-          <th>Ações</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
-</section>
-
-<section class="livros-section" id="secao-ranking" style="display:none;">
-  <div class="livros-card">
-    <h2>Ranking de Empréstimos</h2>
-    <label>Período:
+  <section class="ranking-section" id="secao-ranking" style="display:none;">
+  <div class="ranking-card">
+    <h2>🏆 Ranking</h2>
+    
+    <div class="ranking-filtros">
+      <label>Filtro:</label>
       <select id="filtroRanking">
-        <option value="bimestral">Bimestral</option>
-        <option value="anual">Anual</option>
+        <option value="Todos">Todos</option>
+        <option value="Manhã">Manhã</option>
+        <option value="Tarde">Tarde</option>
+        <option value="Noite">Noite</option>
       </select>
-    </label>
-    <table id="tabelaRanking">
-      <thead>
-        <tr>
-          <th>Nome</th>
-          <th>Turno</th>
-          <th>Turma</th>
-          <th>Empréstimos</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+    </div>
+
+    <div id="tabela-ranking"></div>
   </div>
 </section>
 
-<section class="livros-section" id="secao-leitores-cadastrados" style="display:none;">
-  <div class="livros-card">
-    <h2>Leitores Cadastrados</h2>
-    <input type="text" id="buscarLeitor" placeholder="Pesquisar por nome"/>
-    <table id="tabelaLeitores">
-      <thead>
-        <tr>
-          <th>Nome</th>
-          <th>Data Nasc.</th>
-          <th>Email</th>
-          <th>Senha</th>
-          <th>Ações</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+<dialog id="dialogSelecionar">
+  <div class="dialog-header">
+    <h3 id="dialogTitulo">Selecionar Item</h3>
+    <button id="btnFecharDialog" class="btn btn-danger">Fechar</button>
   </div>
-</section>
+  <div class="dialog-search">
+    <input type="text" id="pesquisaDialog" placeholder="Pesquisar..." />
+    <span id="statusDialog" style="font-size:14px;opacity:.8;"></span>
+  </div>
+  <ul id="listaDialog" class="dialog-lista"></ul>
+</dialog>
 
-<section class="livros-section" id="secao-notificacoes" style="display:none;">
-  <div class="livros-card">
-    <h2>Notificações de Devolução</h2>
-    <label>Turno:<select id="filtroTurnoNotificacao"></select></label>
-    <table id="tabelaNotificacao">
-      <thead>
-        <tr>
-          <th>Nome</th>
-          <th>Turma</th>
-          <th>Turno</th>
-          <th>Livro</th>
-          <th>Data Entrega</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+  <dialog id="dialogoConfirmacao">
+  <p id="dialogoMensagem"></p>
+  <div class="dialogoBotoes">
+    <button id="btnSimDialog">Sim</button>
+    <button id="btnCancelarDialog">Cancelar</button>
   </div>
-</section>
-  
+</dialog>
+
 
   <div id="toast-container" class="toast-container"></div>
-
   <script type="module" src="painel.js"></script>
-
 </body>
 </html>

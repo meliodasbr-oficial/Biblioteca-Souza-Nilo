@@ -1,19 +1,33 @@
-import { db } from "./firebase-config.js";
-import { collection, getDocs } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+// ======= IMPORTS FIREBASE =======
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
+// ======= CONFIG FIREBASE =======
+const firebaseConfig = {
+  apiKey: "AIzaSyDsDQ8AzInwgdA8gO9XOTIiqVUtOHFYNQ",
+  authDomain: "biblioteca-souza-nilo.firebaseapp.com",
+  projectId: "biblioteca-souza-nilo",
+  storageBucket: "biblioteca-souza-nilo.appspot.com",
+  messagingSenderId: "927105626349",
+  appId: "1:927105626349:web:58b89b3fc32438bdde1ce4",
+  measurementId: "G-HYC39S6B8W"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// ======= REFERÊNCIAS =======
 const divGeneros = document.getElementById("generos");
 const divBotoes = document.getElementById("botoes-generos");
 const inputPesquisa = document.getElementById("pesquisa");
 document.getElementById("btn-login").addEventListener("click", () => {
   window.location.href = "login.html";
 });
-document.getElementById("btn-login-leitor").addEventListener("click", () => {
-  window.location.href = "login-leitor.html";
-});
 
 const livrosPorGenero = {};
 let generoSelecionado = "Todos";
 
+// ======= BUSCAR LIVROS DO FIRESTORE =======
 async function carregarLivros() {
   const snapshot = await getDocs(collection(db, "livros"));
 
@@ -25,16 +39,11 @@ async function carregarLivros() {
     livrosPorGenero[genero].push(livro);
   });
 
-  snapshot.forEach(doc => {
-  const livro = doc.data();
-  console.log(livro);
-});
-
-
   criarBotoesGeneros();
   renderizarLivros();
 }
 
+// ======= CRIAR BOTÕES DE GÊNERO =======
 function criarBotoesGeneros() {
   divBotoes.innerHTML = "";
 
@@ -53,6 +62,7 @@ function criarBotoesGeneros() {
   }
 }
 
+// ======= FILTRAR POR GÊNERO =======
 function filtrarPorGenero(genero) {
   generoSelecionado = genero;
 
@@ -63,6 +73,7 @@ function filtrarPorGenero(genero) {
   renderizarLivros();
 }
 
+// ======= RENDERIZAR LIVROS =======
 function renderizarLivros() {
   divGeneros.innerHTML = "";
 
@@ -93,7 +104,7 @@ function renderizarLivros() {
         <p><strong>Autor:</strong> ${livro.autor}</p>
         <p><strong>Volume:</strong> ${livro.volume || "-"}</p>
         <p><strong>Prateleira:</strong> ${livro.prateleira || "-"}</p>
-        <p><strong>Quantidade:</strong> ${livro.quantidade ?? 0}</p>
+        <p><strong>Disponível:</strong> ${livro.disponivel ?? 0}</p>
       `;
       divLivros.appendChild(card);
     });
