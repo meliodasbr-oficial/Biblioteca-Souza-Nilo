@@ -136,7 +136,7 @@ tbody{
   padding: 15px;
   border-radius: 8px;
   min-height: 150px;
-  max-height: 550px;
+  max-height: 450px;
   overflow-y: auto;
   color: white;
   scrollbar-width: thin;
@@ -897,62 +897,21 @@ dialog::backdrop {
   opacity: 0.7;
 }
 
-#secao-ranking {
-  margin-top: 20px;
-  padding: 20px;
+.painel-conteudo .card.selected {
+  border-color: yellow;
+  background-color: darkblue;
+  box-shadow: 0 4px 14px 2px rgb(228 255 0 / 65%);
 }
 
-.ranking-card {
-  background: #1e1e1e;
-  color: #fff;
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-}
-
-.ranking-card h2 {
-  margin-bottom: 15px;
-  font-size: 1.5rem;
-  color: #ff4444;
-}
-
-.ranking-filtros {
-  margin-bottom: 15px;
-}
-.ranking-filtros select {
-  padding: 6px 12px;
+#form-registrar-emprestimo button {
+  background-color: #ff4444;
+  color: white;
+  border: none;
   border-radius: 6px;
-  border: 1px solid #444;
-  background: #2a2a2a;
-  color: #fff;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 16px;
+  padding: 10px 20px;
+  transition: background-color 0.3s;
 }
 
-.ranking-tabela {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 10px;
-}
-.ranking-tabela th, 
-.ranking-tabela td {
-  padding: 10px;
-  border-bottom: 1px solid #444;
-  text-align: left;
-}
-.ranking-tabela th {
-  background: #2c2c2c;
-  color: #ff4444;
-  font-weight: bold;
-}
-
-.ranking-tabela tr.ouro td {
-  background: #ffd70033;
-  font-weight: bold;
-}
-.ranking-tabela tr.prata td {
-  background: #c0c0c033;
-  font-weight: bold;
-}
-.ranking-tabela tr.bronze td {
-  background: #cd7f3233;
-  font-weight: bold;
-}

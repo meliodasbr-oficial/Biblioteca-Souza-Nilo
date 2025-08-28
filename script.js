@@ -104,7 +104,7 @@ function renderizarLivros() {
         <p><strong>Autor:</strong> ${livro.autor}</p>
         <p><strong>Volume:</strong> ${livro.volume || "-"}</p>
         <p><strong>Prateleira:</strong> ${livro.prateleira || "-"}</p>
-        <p><strong>Disponível:</strong> ${livro.disponivel ?? 0}</p>
+        <p><strong>Disponível:</strong> ${livro.quantidade ?? 0}</p>
       `;
       divLivros.appendChild(card);
     });
@@ -138,6 +138,27 @@ function aplicarFiltroPesquisa() {
     tituloGenero.style.display = tem ? "block" : "none";
   });
 }
+
+const btnTema = document.getElementById('btn-tema');
+
+// Verifica se o usuário já escolheu tema
+if(localStorage.getItem('tema') === 'escuro') {
+  document.body.classList.add('tema-escuro');
+  btnTema.textContent = '☀️'; // ícone sol
+}
+
+btnTema.addEventListener('click', () => {
+  document.body.classList.toggle('tema-escuro');
+  
+  if(document.body.classList.contains('tema-escuro')) {
+    btnTema.textContent = '☀️'; // ícone sol
+    localStorage.setItem('tema', 'escuro');
+  } else {
+    btnTema.textContent = '🌙'; // ícone lua
+    localStorage.setItem('tema', 'claro');
+  }
+});
+
 
 // ======= INICIAR =======
 carregarLivros();

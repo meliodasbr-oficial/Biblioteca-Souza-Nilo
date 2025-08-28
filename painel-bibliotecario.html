@@ -25,7 +25,6 @@
     <div class="card" id="card-livros">📖 Livros Catalogados</div>
     <div class="card" id="card-lista-leitores">📋 Lista de Leitores</div>
     <div class="card" id="card-lista-emprestimos">📂 Lista de Empréstimos</div>
-    <div class="card" id="card-ranking">🏆 Ranking</div>
     <div class="card" id="card-notificacoes">🔔 Notificações</div>
   </main>
 
@@ -79,7 +78,6 @@
 
         <div style="margin-top: 20px; display: flex; gap: 10px;">
           <button type="submit">Registrar</button>
-          <button type="button" id="btn-cancelar-registrar">Cancelar</button>
         </div>
       </form>
     </div>
@@ -152,7 +150,6 @@
       </label>
       <div class="botoes-form">
         <button type="submit">Registrar</button>
-        <button type="button" class="btn-cancelar">Cancelar</button>
       </div>
     </form>
   </div>
@@ -212,24 +209,6 @@
       <div id="lista-notificacoes"></div>
     </div>
   </section>
-
-  <section class="ranking-section" id="secao-ranking" style="display:none;">
-  <div class="ranking-card">
-    <h2>🏆 Ranking</h2>
-    
-    <div class="ranking-filtros">
-      <label>Filtro:</label>
-      <select id="filtroRanking">
-        <option value="Todos">Todos</option>
-        <option value="Manhã">Manhã</option>
-        <option value="Tarde">Tarde</option>
-        <option value="Noite">Noite</option>
-      </select>
-    </div>
-
-    <div id="tabela-ranking"></div>
-  </div>
-</section>
 
 <dialog id="dialogSelecionar">
   <div class="dialog-header">

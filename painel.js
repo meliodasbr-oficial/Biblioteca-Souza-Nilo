@@ -97,8 +97,7 @@ const botoes = {
   "card-lista-leitores": "secao-lista-leitores",
   "card-emprestimo": "secao-registrar-emprestimo",
   "card-lista-emprestimos": "secao-lista-emprestimos",
-  "card-notificacoes": "secao-notificacoes",
-  "card-ranking": "secao-ranking"
+  "card-notificacoes": "secao-notificacoes"
 };
 
 Object.keys(botoes).forEach(id => {
@@ -114,8 +113,15 @@ Object.keys(botoes).forEach(id => {
   });
 });
 
-document.getElementById("btn-cancelar-registrar").addEventListener("click", () => {
-  document.getElementById("secao-registrar-livro").style.display = "none";
+document.querySelectorAll(".painel-conteudo .card").forEach(card => {
+  card.addEventListener("click", () => {
+    // Remove a seleção dos outros
+    document.querySelectorAll(".painel-conteudo .card")
+      .forEach(c => c.classList.remove("selected"));
+
+    // Adiciona no clicado
+    card.classList.add("selected");
+  });
 });
 
 let generosCadastrados = [];
@@ -527,9 +533,10 @@ document.querySelectorAll("#secao-registrar-leitor .btn-cancelar").forEach(btn =
   });
 });
 
-document.getElementById("card-leitores").addEventListener("click", () => {
-  Object.values(botoes).forEach(secao => document.getElementById(secao).style.display = "none");
-  document.getElementById("secao-registrar-leitor").style.display = "block";
+window.addEventListener("load", () => {
+  Object.values(botoes).forEach(secao => {
+    document.getElementById(secao).style.display = "none";
+  });
 });
 
 async function carregarLeitores() {
