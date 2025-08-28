@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Console Protegido</title>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      font-family: Arial, sans-serif;
+      background-color: #001f3f;
+      color: #ffffff;
+      text-align: center;
+      transition: all 0.3s;
+    }
+    h1 { font-size: 2rem; margin-bottom: 20px; }
+    p { font-size: 1.2rem; color: #ff4136; }
+  </style>
+</head>
+<body>
+  <div id="conteudo">
+    <h1>🚫 Acesso Bloqueado 🚫</h1>
+    <p>Você não é um desenvolvedor!</p>
+  </div>
+
+  <script>
+  (function() {
+    let autorizado = false;
+    window.desbloquearConsole = function(s) {
+      if (s === senha) {
+        autorizado = true;
+        alert("✅ Console desbloqueado! Você é autorizado.");
+        // Restaura DOM
+        document.body.style.visibility = "visible";
+      } else {
+        alert("❌ Senha incorreta!");
+      }
+    };
+    const bloquearTudo = () => {
+      if (autorizado) return;
+      console.clear();
+      document.body.style.visibility = "hidden";
+
+      const conteudo = document.getElementById("conteudo");
+      if (conteudo) conteudo.innerHTML = "";
+      document.body.innerHTML = "<h1>🚫 Acesso Negado 🚫</h1>";
+    };
+
+    const detectConsole = () => {
+      if (autorizado) return;
+      const element = new Image();
+      Object.defineProperty(element, 'id', {
+        get: function() { bloquearTudo(); }
+      });
+      console.log(element);
+    };
+
+    setInterval(detectConsole, 1000);
+
+    document.addEventListener('keydown', function(e) {
+      if (autorizado) return;
+      if (
+        e.key === "F12" || 
+        (e.ctrlKey && e.shiftKey && (e.key === "I" || e.key === "J")) || 
+        (e.ctrlKey && e.key === "U")
+      ) {
+        bloquearTudo();
+        e.preventDefault();
+        return false;
+      }
+    });
+
+  })();
+  </script>
+</body>
+</html>

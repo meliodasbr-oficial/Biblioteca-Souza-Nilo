@@ -69,3 +69,20 @@ body, html {
   margin-top: 10px;
   text-align: center;
 }
+
+#toggleSenha {
+  display: inline-block;
+  background-color: #001f3f;
+  color: #ffffff;
+  border: none;
+  border-radius: 50px; /* formato pílula */
+  padding: 8px 20px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  margin-bottom: 30px;
+}
+
+#toggleSenha:hover {
+  background-color: #003366;
+}

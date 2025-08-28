@@ -22,3 +22,16 @@ document.getElementById("loginForm").addEventListener("submit", function(event) 
       console.error(error);
     });
 });
+
+const senhaInput = document.getElementById("senha");
+const toggleSenhaBtn = document.getElementById("toggleSenha");
+
+toggleSenhaBtn.addEventListener("click", () => {
+  if (senhaInput.type === "password") {
+    senhaInput.type = "text";
+    toggleSenhaBtn.textContent = "Ocultar Senha";
+  } else {
+    senhaInput.type = "password";
+    toggleSenhaBtn.textContent = "Mostrar Senha";
+  }
+});
