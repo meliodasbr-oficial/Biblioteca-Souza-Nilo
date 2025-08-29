@@ -1,747 +1,593 @@
-html::-webkit-scrollbar {
-  width: 12px;
-}
-
-html::-webkit-scrollbar-track {
-  background: #0b1a40;
-  border-radius: 10px;
-}
-
-html::-webkit-scrollbar-thumb {
-  background-color: #ff4444;
-  border-radius: 10px;
-  border: 3px solid #0b1a40;
-  transition: background-color 0.3s;
-}
-
-html::-webkit-scrollbar-thumb:hover {
-  background-color: #cc0000;
-}
-
-html {
-  scrollbar-width: thin;
-  scrollbar-color: #ff4444 #0b1a40;
-}
-
-.painel-bg {
-  background: linear-gradient(to bottom right, #00173f, #b00000);
-  min-height: 100vh;
+* {
   margin: 0;
-  font-family: Arial, sans-serif;
-  color: white;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Arial', sans-serif;
 }
 
-.logo-escola {
+body {
+  display: flex;
+  min-height: 100vh;
+  background: linear-gradient(to bottom right, #00173f, #2b0a0a);
+  color: white;
+  overflow-x: hidden;
+}
+
+.sidebar {
+  width: 240px;
+  min-width: 240px;
+  background: linear-gradient(to bottom, #00173f, #330000);
+  padding: 12px 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.sidebar-header {
+  text-align: center;
+  margin-bottom: 14px;
+}
+
+.sidebar-header .logo-escola {
   max-width: 70px;
-  height: auto;
   margin-bottom: 10px;
 }
 
-h1 {
-  font-size: 20px;
-  margin: 15px;
+.sidebar-header h1 {
+  font-size: 18px;
+  margin-bottom: 6px;
 }
 
-@media (max-width: 600px) {
-  h1 {
-    font-size: 16px;
-  }
+.sidebar-header .user-email {
+  font-size: 13px;
+  font-weight: bold;
+  color: #fff;
+  background: #003366;
+  padding: 4px 8px;
+  border-radius: 5px;
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
+.sidebar-nav .card {
+  margin-bottom: 10px;
+  padding: 12px 15px;
+  text-align: left;
+  font-size: 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: background 0.3s, transform 0.2s;
+}
 
-.painel-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 3px;
-  background-color: rgba(0, 0, 0, 0.4);
+.sidebar-nav .card:hover,
+.sidebar-nav .card.selected {
+  background-color: #ff4444;
+  color: white;
+  transform: scale(1.05);
 }
 
 .logout-btn {
+  margin-top: 20px;
   padding: 10px 14px;
-  background-color: #ff4444;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
+  background-color: #ff4444;
   color: white;
   font-weight: bold;
   cursor: pointer;
-  font-size: medium;
-  transition: background-color 0.3s;
-  right: 8px;
-  position: sticky;
+  transition: background 0.3s;
 }
 
 .logout-btn:hover {
   background-color: #cc0000;
 }
 
-.painel-conteudo {
+.main-content {
+  flex: 1;
+  padding: 30px;
+  overflow-y: auto;
+}
+
+.cards-section {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 20px;
-  padding: 40px;
 }
 
-.card {
-  background-color: rgba(255, 255, 255, 0.1);
-  border: 2px solid white;
+html::-webkit-scrollbar {
+  width: 10px;
+}
+
+html::-webkit-scrollbar-track {
+  background: rgba(0,0,0,0.3);
+}
+
+html::-webkit-scrollbar-thumb {
+  background-color: #ff4444;
   border-radius: 10px;
-  padding: 30px;
-  text-align: center;
-  font-size: 18px;
-  font-weight: bold;
-  backdrop-filter: blur(4px);
-  cursor: pointer;
-  transition: transform 0.2s ease, background-color 0.2s ease;
 }
 
-.card:hover {
-  transform: scale(1.05);
-  background-color: #00173f;
-}
-
-.livros-section {
-  padding: 30px 20px;
-}
-
-.livros-card {
-  background-color: rgba(0, 0, 0, 0.4);
-  border-radius: 12px;
-  padding: 20px;
-  max-width: 100%;
-  max-height: 750px;
-  margin: 0 auto;
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
-}
-
-tbody{
-  font-weight: 600;
-}
-
-.livros-topo {
-  margin-bottom: 15px;
-}
-
-.livros-pesquisa {
-  width: 100%;
-  padding: 12px;
-  border-radius: 8px;
-  border: none;
-  font-size: 16px;
-  max-width: 300px;
-}
-
-.livros-lista {
-  background-color: rgba(255, 255, 255, 0.05);
-  padding: 15px;
-  border-radius: 8px;
-  min-height: 150px;
-  max-height: 450px;
-  overflow-y: auto;
-  color: white;
+html {
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+  scrollbar-color: #ff4444 rgba(0,0,0,0.3);
 }
 
-.livros-lista::-webkit-scrollbar {
-  width: 8px;
-}
-
-.livros-lista::-webkit-scrollbar-track {
-  background: transparent;
-  border-radius: 8px;
-}
-
-.livros-lista::-webkit-scrollbar-thumb {
-  background-color: rgba(255, 255, 255, 0.3);
-  border-radius: 8px;
-  border: 2px solid transparent;
-  background-clip: content-box;
-  transition: background-color 0.3s;
-}
-
-.livros-lista::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(255, 255, 255, 0.6);
-}
-
-.sem-livros {
-  text-align: center;
-  font-style: italic;
-  opacity: 0.7;
-}
-
-@media (max-width: 600px) {
-  .painel-conteudo {
-    padding: 20px;
-    grid-template-columns: 1fr;
+@media(max-width: 800px) {
+  .sidebar {
+    width: 200px;
+    min-width: 200px;
   }
 
-  .card {
-    padding: 20px;
+  .sidebar-header h1 {
     font-size: 16px;
   }
 
-  .livros-card {
-    padding: 15px;
+  .sidebar-nav .card {
+    font-size: 14px;
   }
 }
 
-.item-livro {
-  display: flex;
-  justify-content: space-between;
-  background-color: rgba(255, 255, 255, 0.1);
-  padding: 10px;
-  margin-bottom: 10px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: 0.2s ease;
-  transform: scale(1);
-}
-
-.item-livro:hover {
-  background-color: rgba(255, 255, 255, 0.2);
-  transform: scale(1.02);
-}
-
-.botao-acao {
-  background-color: #ff4444;
-  color: white;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 6px;
-  cursor: pointer;
-  display: none;
-}
-
-.item-livro.selecionado .botao-acao {
-  display: inline-block;
-}
-
-#secao-registrar-livro, #secao-registrar-leitor, #secao-registrar-emprestimo, #secao-criar-genero  {
-  margin-top: 20px;
-  max-width: 900px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-#secao-registrar-livro h2 {
+.livros-card {
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  padding: 20px;
   margin-bottom: 20px;
-  text-align: center;
-  font-weight: 700;
+  box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+  transition: transform 0.2s, box-shadow 0.2s;
 }
 
-#form-registrar-livro label {
-  display: block;
+.livros-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+}
+
+.livros-card h2 {
   margin-bottom: 15px;
-  font-weight: 600;
-  font-size: 15px;
-}
-
-#form-registrar-livro input {
-  width: 100%;
-  padding: 8px 10px;
-  border-radius: 6px;
-  border: none;
-  font-size: 15px;
-  box-sizing: border-box;
-}
-
-#form-registrar-livro button {
-  background-color: #ff4444;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 700;
-  font-size: 16px;
-  padding: 10px 20px;
-  transition: background-color 0.3s;
-}
-
-#form-registrar-leitor button {
-  background-color: #ff4444;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 700;
-  font-size: 16px;
-  padding: 10px 20px;
-  transition: background-color 0.3s;
-}
-
-#form-registrar-livro button:hover {
-  background-color: #cc0000;
-}
-
-#toast-container {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  z-index: 9999;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  max-width: 320px;
-  pointer-events: none;
-}
-
-.toast {
-  pointer-events: auto;
-  background-color: #333;
-  color: #eee;
-  padding: 14px 20px;
-  border-radius: 8px;
-  font-weight: 600;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-width: 280px;
-  opacity: 0;
-  animation: slideInToast 0.5s forwards;
-  position: relative;
-  overflow: hidden;
-}
-
-.toast.success {
-  background-color: #2e7d32;
-}
-
-.toast.error {
-  background-color: #c62828;
-}
-
-.toast.warning {
-  background-color: #f9a825;
-}
-
-.toast .emoji {
-  font-size: 24px;
-  user-select: none;
-}
-
-.toast .message {
-  flex: 1;
-  user-select: none;
-}
-
-.toast .duration-bar {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  height: 4px;
-  background: rgba(255, 255, 255, 0.7);
-  width: 100%;
-  animation-timing-function: linear;
-  animation-fill-mode: forwards;
-}
-
-@keyframes durationBarAnim {
-  from { width: 100%; }
-  to { width: 0%; }
-}
-
-@keyframes slideInToast {
-  from {
-    opacity: 0;
-    transform: translateX(100%);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes slideOutToast {
-  from {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  to {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-}
-
-
-.genero-item {
-  display: flex;
-  justify-content: space-between;
-  padding: 10px;
-  background-color: rgba(255,255,255,0.1);
-  border-radius: 6px;
-  margin-bottom: 10px;
-  cursor: pointer;
-  transition: 0.2s ease;
-  user-select: none;
-}
-
-.genero-item:hover {
-  background-color: rgba(255,255,255,0.2);
-  transform: scale(1.02);
-}
-
-.genero-item.selecionado {
-  background-color: rgba(165, 165, 165, 0.232);
-  color: white;
-  transform: scale(1.02);
-}
-
-.botao-acao-genero {
-  background-color: white;
   color: #ff4444;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 6px;
+}
+
+.livros-card input[type="text"],
+.livros-card input[type="number"],
+.livros-card input[type="date"],
+.livros-card select {
+  width: 100%;
+  padding: 10px 12px;
+  margin: 6px 0 15px 0;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.3);
+  background-color: rgba(255,255,255,0.1);
+  color: white;
+  font-size: 14px;
+  transition: border 0.3s, background 0.3s;
+}
+
+.livros-card select option {
+  background-color: #00173f; /* fundo das opções */
+  color: white;              /* texto das opções */
+}
+
+.livros-card input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(100%) brightness(150%);
   cursor: pointer;
-  margin-left: 5px;
-  font-weight: 700;
-  display: none;
 }
 
-.genero-item.selecionado .botao-acao-genero {
-  display: inline-block;
+.livros-card input::placeholder {
+  color: rgba(255,255,255,0.6);
 }
 
-.edit-input-genero {
-  flex-grow: 1;
-  padding: 6px 8px;
-  border-radius: 6px;
+.livros-card input:focus,
+.livros-card select:focus {
+  outline: none;
+  border: 1px solid #ff4444;
+  background-color: rgba(255,255,255,0.15);
+}
+
+.livros-card button {
+  padding: 10px 18px;
   border: none;
-  font-size: 16px;
-}
-
-#form-criar-genero button {
+  border-radius: 8px;
   background-color: #ff4444;
   color: white;
-  border: none;
-  border-radius: 6px;
+  font-weight: bold;
   cursor: pointer;
-  font-weight: 700;
-  font-size: 16px;
-  padding: 10px 20px;
-  transition: background-color 0.3s;
+  transition: background 0.3s, transform 0.2s;
 }
 
-#form-criar-genero button:hover {
+.livros-card button:hover {
   background-color: #cc0000;
+  transform: scale(1.05);
 }
 
-#form-criar-genero input{
-  width: 100%;
-  padding: 8px 10px;
-  border-radius: 6px;
-  border: none;
-  font-size: 15px;
-  box-sizing: border-box;
+.livros-card .btn-cancelar {
+  background-color: rgba(255,255,255,0.1);
+  color: white;
 }
 
+.livros-card .btn-cancelar:hover {
+  background-color: rgba(255,255,255,0.2);
+}
+
+.botoes-form {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
 
 #modalGenero {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
   background: rgba(0,0,0,0.7);
-  display: none;
+  display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000;
-  font-family: Arial, sans-serif;
+  z-index: 100;
 }
 
-#modalGenero .modal-content {
-  background-color: #222;
+.modal-conteudo {
+  background: #00173f;
   padding: 20px;
-  border-radius: 8px;
-  width: 320px;
-  max-height: 70vh;
-  overflow-y: auto;
-  box-shadow: 0 0 15px rgba(255, 68, 68, 0.5);
-  color: #eee;
-  position: relative;
+  border-radius: 12px;
+  min-width: 300px;
+  max-width: 400px;
+  box-shadow: 0 6px 12px rgba(0,0,0,0.5);
+  text-align: center;
 }
 
-#modalGenero #fecharModalGenero {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  background: transparent;
-  border: none;
-  color: #eee;
-  font-size: 20px;
-  cursor: pointer;
-  padding: 4px 8px;
-  transition: color 0.3s;
-}
-
-#modalGenero #fecharModalGenero:hover {
+.modal-conteudo h3 {
   color: #ff4444;
+  margin-bottom: 15px;
 }
 
-#listaGenerosModal {
+.modal-conteudo ul {
   list-style: none;
-  margin: 0;
+  max-height: 200px;
+  overflow-y: auto;
   padding: 0;
 }
 
-#listaGenerosModal li {
-  padding: 8px 12px;
-  border-radius: 4px;
+.modal-conteudo ul li {
+  padding: 8px 10px;
+  margin-bottom: 5px;
+  border-radius: 6px;
+  background: rgba(255,255,255,0.05);
   cursor: pointer;
-  color: #eee;
-  transition: background-color 0.3s;
+  transition: background 0.2s;
 }
 
-#listaGenerosModal li:hover {
-  background-color: #ff4444;
-  color: #fff;
+.modal-conteudo ul li:hover {
+  background: #ff4444;
+  color: white;
 }
 
-
-.btn-remover {
-  background-color: #d9534f;
+#fecharModalGenero {
+  float: right;
   border: none;
+  background: none;
+  font-size: 18px;
   color: white;
-  padding: 6px 12px;
-  border-radius: 4px;
-  font-size: 0.9rem;
   cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-.btn-remover:hover {
-  background-color: #c9302c;
-}
-
-.titulo-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.user-email {
-  font-weight: bold;
-  color: white;
-  background: #003366;
-  padding: 4px 8px;
-  border-radius: 5px;
-  font-size: 13px;
-  margin-top: 4px;
-  text-align: center;
-  max-width: 100%;
-  white-space: nowrap;
-  overflow: hidden;
 }
 
 .livros-section {
-  display: none;
-  padding: 20px;
+  display: flex;
+  justify-content: center;
+  padding: 30px;
+  flex: 1;
+  background: transparent;
 }
 
-.livros-card {
-  background-color: rgba(0,0,0,0.4);
-  border-radius: 12px;
-  padding: 20px;
-}
-
-.livros-card h2{
-  text-align: center;
-}
-
-.livros-card table {
+.livros-section .livros-card {
   width: 100%;
-  border-collapse: collapse;
-  color: white;
+  max-width: 600px;
 }
 
-.livros-card th, .livros-card td {
-  border: 1px solid rgba(255,255,255,0.3);
-  padding: 8px;
+.generos-card {
+  width: 100%;
+  max-width: 100%;
+  max-height: 350px;
+  overflow-y: auto;
+  background-color: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 10px;
+  padding: 10px;
+  margin-top: 10px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
 }
 
-.livros-card th {
-  background-color: rgba(255,255,255,0.1);
+.generos-card ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
-input, select, button {
-  font-size: 14px;
-  padding: 6px;
+.generos-card ul li {
+  padding: 8px 10px;
+  margin-bottom: 6px;
   border-radius: 6px;
-  border: none;
-  margin-top: 4px;
-  margin-bottom: 10px;
+  background: rgba(255,255,255,0.1);
+  cursor: default;
+  transition: background 0.2s;
 }
 
-button {
+.generos-card ul li:hover {
   background-color: #ff4444;
   color: white;
-  cursor: pointer;
 }
 
-button:hover {
-  background-color: #cc0000;
+
+/* SEÇÕES DE LISTA CENTRALIZADAS */
+.lista-section {
+  display: flex;
+  justify-content: center;
+  padding: 30px;
+  flex: 1;
+  background: transparent;
 }
 
-.card-selecionado {
-  background-color: #003366;
-  color: #fff;
-}
-
-#form-registrar-leitor label {
-  display: block;
-  margin-bottom: 15px;
-  font-weight: 600;
-  font-size: 15px;
-}
-
-#form-registrar-leitor input, select {
+.lista-section .livros-card {
   width: 100%;
-  padding: 8px 10px;
-  border-radius: 6px;
-  border: none;
-  font-size: 15px;
-  box-sizing: border-box;
-}
-
-#form-registrar-emprestimo label {
-  display: block;
-  margin-bottom: 15px;
-  font-weight: 600;
-  font-size: 15px;
-}
-
-#form-registrar-emprestimo input, select {
-  width: 100%;
-  padding: 8px 10px;
-  border-radius: 6px;
-  border: none;
-  font-size: 15px;
-  box-sizing: border-box;
-}
-
-#dialogoConfirmacao {
-  border: none;
+  max-width: 1000vh;
+  background-color: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.2);
   border-radius: 12px;
-  padding: 25px 30px;
-  min-width: 320px;
-  max-width: 90%;
-  background: linear-gradient(135deg, #001f3f, #004080);
+  padding: 20px;
+  box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+}
+
+.lista-section .livros-lista,
+.lista-section .generos-card,
+.lista-section #lista-leitores,
+.lista-section #lista-emprestimos,
+.lista-section #lista-notificacoes {
+  max-height: 600px;       /* altura máxima antes do scroll */
+  overflow-y: auto;        /* scroll interno */
+  padding: 10px;
+  margin-top: 10px;
+  border-radius: 10px;
+  background-color: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.2);
+}
+
+/* ITENS DA LISTA */
+.lista-section .livros-lista p,
+.lista-section .generos-card ul li,
+.lista-section #lista-leitores p,
+.lista-section #lista-emprestimos p,
+.lista-section #lista-notificacoes p {
+  padding: 8px 10px;
+  margin-bottom: 6px;
+  border-radius: 6px;
+  background: rgba(255,255,255,0.1);
+  transition: background 0.2s;
+}
+
+.lista-section .livros-lista p:hover,
+.lista-section .generos-card ul li:hover,
+.lista-section #lista-leitores p:hover,
+.lista-section #lista-emprestimos p:hover,
+.lista-section #lista-notificacoes p:hover {
+  background-color: #ff4444;
+  color: white;
+}
+
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 240px;
+  height: 100vh;
+  z-index: 2;
+  background: linear-gradient(to bottom, #00173f, #330000);
+}
+
+.lista-section,
+.livros-section {
+  margin-left: 240px;
+  padding: 30px;
+  display: flex;
+  justify-content: center;
+  flex: 1;
+}
+
+
+/* ================== TOAST ================== */
+.toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 3000;
+  pointer-events: none;
+}
+
+.toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 2000;
+}
+
+.toast {
+  background: #222;
   color: #fff;
-  text-align: center;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-size: 15px;
+  min-width: 220px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
   opacity: 0;
-  transform: translateY(-50px) scale(0.8);
-  transition: transform 0.3s ease, opacity 0.3s ease;
+  transform: translateX(120%);
+  animation: slideIn 0.5s forwards;
 }
 
-#dialogoConfirmacao[open] {
-  animation: abrirDialogo 0.35s forwards;
+.toast.hide {
+  animation: slideOut 0.5s forwards;
 }
 
-@keyframes abrirDialogo {
-  0% {
-    opacity: 0;
-    transform: translateY(-50px) scale(0.8);
-  }
-  60% {
-    opacity: 1;
-    transform: translateY(10px) scale(1.05);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(120%); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideOut {
+  from { opacity: 1; transform: translateX(0); }
+  to   { opacity: 0; transform: translateX(120%); }
 }
 
 #dialogoConfirmacao::backdrop {
-  background-color: rgba(0,0,0,0.6);
+  background: rgba(0,0,0,0.6);
   backdrop-filter: blur(2px);
 }
 
+#dialogoConfirmacao {
+  position: relative;
+  border: none;
+  border-radius: 20px;
+  padding: 20px;
+  background: transparent;
+  color: white;
+  text-align: center;
+  min-width: 320px;
+  animation: dialogIn 0.4s ease-out;
+  margin: auto;
+  overflow: hidden;
+  z-index: 1;
+}
+
+#dialogoConfirmacao::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 20px;
+  background: conic-gradient(
+    from 0deg,
+    navy,
+    red,
+    yellow,
+    white,
+    navy
+  );
+  animation: spinBg 6s linear infinite;
+  z-index: 0;
+  filter: blur(20px);
+}
+
+#dialogoConfirmacao::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 20px;
+  background: rgba(30, 30, 30, 0.85);
+  backdrop-filter: blur(6px);
+  z-index: 0;
+}
+
+#dialogoConfirmacao * {
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes spinBg {
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes dialogIn {
+  from { opacity: 0; transform: translateY(-40px) scale(0.9); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+
+#dialogoConfirmacao::after {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  background: #1e1e1e;
+  border-radius: 16px;
+  z-index: 0;
+}
+
+#dialogoConfirmacao * {
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes dialogIn {
+  from { opacity: 0; transform: translateY(-30px) scale(0.9); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes spinBorder {
+  100% { transform: rotate(360deg); }
+}
+
+/* ================== BOTÕES DIALOG ================== */
 .dialogoBotoes {
-  margin-top: 25px;
   display: flex;
+  gap: 10px;
+  margin-top: 15px;
   justify-content: center;
-  gap: 15px;
 }
 
 .dialogoBotoes button {
-  padding: 10px 20px;
+  padding: 10px 18px;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
+  font-size: 15px;
   cursor: pointer;
-  font-weight: 500;
-  font-size: 14px;
-  transition: background 0.2s ease, transform 0.2s ease;
+  color: #fff;
+  background: #333;
+  transition: background 0.3s, transform 0.2s;
 }
 
-#btnSimDialog {
-  background: linear-gradient(90deg, #00c6ff, #0072ff);
-}
-#btnSimDialog:hover {
-  transform: translateY(-2px);
-  background: linear-gradient(90deg, #00aaff, #005bcc);
+.dialogoBotoes button:hover {
+  background: #555;
+  transform: scale(1.05);
 }
 
-#btnCancelarDialog {
-  background: linear-gradient(90deg, #aaa, #888);
-}
-#btnCancelarDialog:hover {
-  transform: translateY(-2px);
-  background: linear-gradient(90deg, #888, #555);
-}
-
-.leitores-pesquisa {
-  width: 100%;
-  padding: 12px;
-  border-radius: 8px;
-  border: none;
-  font-size: 16px;
-  max-width: 300px;
-}
-
-.leitores-topo {
-  display: flex;
-  flex-wrap: wrap; 
-  gap: 10px;        
-  align-items: center;  
-  margin-bottom: 15px;
-}
-
-.leitores-topo select {
-  padding: 12px 10px;
-  border-radius: 8px;
-}
-
-#lista-leitores {
-  background-color: rgba(255, 255, 255, 0.05);
-  padding: 15px;
-  border-radius: 8px;
-  min-height: 150px;
-  max-height: 550px;
-  overflow-y: auto;
-  color: white;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
-}
-
-.sem-leitores {
-  text-align: center;
-  font-style: italic;
-  opacity: 0.7;
-}
-
+/* ===== DIALOG ===== */
 dialog#dialogSelecionar {
-  border: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.9);
   border-radius: 16px;
   width: min(680px, 92vw);
   padding: 20px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+  background-color: #1e1e1e;
+  color: #f5f5f5;
+  box-shadow: 0 10px 30px rgba(255, 255, 255, 0.5);
+  z-index: 9999;
+
+  /* Animação de entrada */
+  opacity: 0;
+  animation: dialogEnter 0.4s ease-out forwards;
 }
 
-dialog::backdrop {
-  background: rgba(0,0,0,0.4);
-  backdrop-filter: blur(2px);
+dialog#dialogSelecionar::backdrop {
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(3px);
+}
+
+@keyframes dialogEnter {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) translateY(-30px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) translateY(0) scale(1);
+  }
 }
 
 .dialog-header {
@@ -766,8 +612,14 @@ dialog::backdrop {
   flex: 1;
   padding: 8px 12px;
   border-radius: 12px;
-  border: 1px solid #ccc;
+  border: 1px solid #555;
   font-size: 16px;
+  background-color: #2a2a2a;
+  color: #f5f5f5;
+}
+
+#pesquisaDialog::placeholder {
+  color: #aaa;
 }
 
 .dialog-lista {
@@ -782,11 +634,12 @@ dialog::backdrop {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border: 1px solid #ddd;
+  border: 1px solid #444;
   border-radius: 12px;
   padding: 12px;
   margin-bottom: 8px;
   flex-wrap: wrap;
+  background-color: #2a2a2a;
 }
 
 .dialog-item:last-child { margin-bottom: 0; }
@@ -799,14 +652,16 @@ dialog::backdrop {
 .dialog-item-title {
   font-weight: 600;
   font-size: 16px;
+  color: #f5f5f5;
 }
 
 .dialog-item-subtitle {
   font-size: 13px;
-  color: #555;
+  color: #bbb;
   margin-top: 2px;
 }
 
+/* ===== BOTOES ===== */
 .btn-selecionar {
   background: #6b3bdc;
   color: white;
@@ -824,94 +679,3 @@ dialog::backdrop {
   border-radius: 8px;
   cursor: pointer;
 }
-
-.botoes-form {
-  display: flex;
-  gap: 10px;
-  margin-top: 12px;
-}
-
-.btn-cancelar {
-  background: #ddd;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 8px;
-  cursor: pointer;
-}
-
-.emprestimos-topo {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  align-items: center;
-  margin-bottom: 15px;
-}
-
-#pesquisaEmprestimos{
-  width: 100%;
-  padding: 12px;
-  border-radius: 8px;
-  border: none;
-  font-size: 16px;
-  max-width: 300px;
-}
-
-.emprestimos-topo select {
-  padding: 12px 10px;
-  border-radius: 8px;
-}
-
-#lista-emprestimos {
-  background-color: rgba(255, 255, 255, 0.05);
-  padding: 15px;
-  border-radius: 8px;
-  min-height: 150px;
-  max-height: 550px;
-  overflow-y: auto;
-  color: white;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
-}
-
-.sem-emprestimos {
-  text-align: center;
-  font-style: italic;
-  opacity: 0.7;
-}
-
-#lista-notificacoes {
-  background-color: rgba(255, 255, 255, 0.05);
-  padding: 15px;
-  border-radius: 8px;
-  min-height: 150px;
-  max-height: 550px;
-  overflow-y: auto;
-  color: white;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
-}
-
-.sem-notificacoes {
-  text-align: center;
-  font-style: italic;
-  opacity: 0.7;
-}
-
-.painel-conteudo .card.selected {
-  border-color: yellow;
-  background-color: darkblue;
-  box-shadow: 0 4px 14px 2px rgb(228 255 0 / 65%);
-}
-
-#form-registrar-emprestimo button {
-  background-color: #ff4444;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 700;
-  font-size: 16px;
-  padding: 10px 20px;
-  transition: background-color 0.3s;
-}
-

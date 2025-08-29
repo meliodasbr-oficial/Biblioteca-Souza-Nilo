@@ -9,16 +9,12 @@
   <script src="console-block.js"></script>
 </head>
 <body class="painel-bg">
-  <header class="painel-header">
-    <img src="souzanilologo.png" alt="" class="logo-escola" draggable="false" />
-    <div class="titulo-container">
-      <h1>Central Bibliotecário(a)</h1>
-      <span id="user-email" class="user-email"></span>
-    </div>
-    <button id="logoutBtn" class="logout-btn">Sair</button>
-  </header>
-
-  <main class="painel-conteudo">
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <img src="souzanilologo.png" alt="Logo Escola" class="logo-escola" draggable="false">
+    <h1>Central Bibliotecário(a)</h1>
+  </div>
+  <nav class="sidebar-nav">
     <div class="card" id="card-registrar">📚 Catalogar Livro</div>
     <div class="card" id="card-leitores">👥 Registrar Leitor</div>
     <div class="card" id="card-emprestimo">📑 Registrar Empréstimo</div>
@@ -27,13 +23,15 @@
     <div class="card" id="card-lista-leitores">📋 Lista de Leitores</div>
     <div class="card" id="card-lista-emprestimos">📂 Lista de Empréstimos</div>
     <div class="card" id="card-notificacoes">🔔 Notificações</div>
-  </main>
+  </nav>
+  <button id="logoutBtn" class="logout-btn">Sair</button>
+</aside>
 
-  <section class="livros-section" id="secao-livros-registrados" style="display: none;">
+  <section class="lista-section" id="secao-livros-registrados" style="display: none;">
     <div class="livros-card">
       <h2>Livros Catalogados</h2>
       <div class="livros-topo">
-        <input type="text" placeholder="Pesquisar livros..." class="livros-pesquisa" />
+        <input type="text" placeholder="Pesquisar livros..." class="livros-pesquisa" id="livros-pesquisa" />
       </div>
       <div class="livros-lista" id="lista-livros-registrados">
         <p class="sem-livros">Nenhum livro registrado.</p>
@@ -98,13 +96,15 @@
       <hr style="margin: 20px 0;" />
 
       <h3>Gêneros Cadastrados</h3>
-      <div id="lista-generos" class="livros-lista">
-        <p class="sem-livros">Nenhum gênero registrado.</p>
-      </div>
+<div class="generos-card">
+  <ul id="lista-generos">
+    <li class="sem-livros">Nenhum gênero registrado.</li>
+  </ul>
+</div>
     </div>
   </section>
 
-  <section class="livros-section" id="secao-registrar-leitor" style="display:none;">
+  <section class="livros-section" id="secao-registrar-leitor" style="display: none;">
     <div class="livros-card">
       <h2>Registrar Leitor</h2>
       <form id="form-registrar-leitor">
@@ -127,7 +127,7 @@
     </div>
   </section>
 
-<section class="livros-section" id="secao-registrar-emprestimo" style="display:block;">
+<section class="livros-section" id="secao-registrar-emprestimo" style="display:none;">
   <div class="livros-card">
     <h2>Registrar Empréstimo</h2>
     <form id="form-registrar-emprestimo">
@@ -156,7 +156,7 @@
   </div>
 </section>
 
-  <section class="livros-section" id="secao-lista-leitores" style="display:none;">
+  <section class="lista-section" id="secao-lista-leitores" style="display:none;">
     <div class="livros-card">
       <h2>Lista de Leitores</h2>
       <div class="leitores-topo">
@@ -179,7 +179,7 @@
     </div>
   </section>
 
-<section class="livros-section" id="secao-lista-emprestimos" style="display:none;">
+<section class="lista-section" id="secao-lista-emprestimos" style="display:none;">
   <div class="livros-card">
     <h2>Lista de Empréstimos</h2>
 
@@ -204,7 +204,7 @@
   </div>
 </section>
 
-  <section class="livros-section" id="secao-notificacoes" style="display:none;">
+  <section class="lista-section" id="secao-notificacoes" style="display:none;">
     <div class="livros-card">
       <h2>Notificações</h2>
       <div id="lista-notificacoes"></div>
@@ -230,7 +230,6 @@
     <button id="btnCancelarDialog">Cancelar</button>
   </div>
 </dialog>
-
 
   <div id="toast-container" class="toast-container"></div>
   <script type="module" src="painel.js"></script>
