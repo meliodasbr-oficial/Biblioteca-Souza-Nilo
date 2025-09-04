@@ -8,7 +8,7 @@
 body {
   display: flex;
   min-height: 100vh;
-  background: linear-gradient(to bottom right, #00173f, #b00000);
+  background: linear-gradient(to bottom right, #1b00ff, #ff0000);
   color: white;
   overflow-x: hidden;
 }
@@ -818,3 +818,4 @@ dialog#dialogSelecionar::backdrop {
   font-size: 1.2rem;
   cursor: pointer;
 }
+
