@@ -6,7 +6,6 @@
   <link rel="shortcut icon" href="souzanilologo.png" type="souzanilologo" />
   <title>Central Bibliotecário</title>
   <link rel="stylesheet" href="painel.css" />
-  <script src="console-block.js"></script>
 </head>
 <body class="painel-bg">
 <aside class="sidebar">
@@ -229,6 +228,49 @@
     <button id="btnSimDialog">Sim</button>
     <button id="btnCancelarDialog">Cancelar</button>
   </div>
+</dialog>
+
+<!--Editar-->
+<dialog id="dialogEditarLivro">
+  <div class="dialog-header">
+    <h3>Editar Livro</h3>
+    <button id="btnFecharEditarLivro" class="btn btn-danger" aria-label="Fechar">&times;</button>
+  </div>
+
+  <form id="form-editar-livro">
+    <label>Nome do Livro:<br>
+      <input type="text" id="editarNomeLivro" required placeholder="Nome do Livro">
+    </label>
+
+    <label>Autor:<br>
+      <input type="text" id="editarAutorLivro" required placeholder="Nome do Autor">
+    </label>
+
+    <label>Gênero:<br>
+      <input type="text" id="editarGeneroLivro" readonly placeholder="Clique para selecionar o gênero" required>
+    </label>
+
+    <div id="modalEditarGenero" style="display:none;">
+      <div class="modal-conteudo">
+        <button id="fecharModalEditarGenero" aria-label="Fechar">&times;</button>
+        <h3>Selecione um gênero</h3>
+        <ul id="listaGenerosEditarModal"></ul>
+      </div>
+    </div>
+
+    <label>Quantidade:<br>
+      <input type="number" id="editarQuantidadeLivro" required min="1" value="1">
+    </label>
+
+    <label>Número da Prateleira:<br>
+      <input type="text" id="editarPrateleiraLivro" placeholder="Local onde o livro está">
+    </label>
+
+    <div style="margin-top: 20px; display: flex; gap: 10px;">
+      <button type="submit">Salvar Edição</button>
+      <button type="button" id="btnCancelarEditarLivro" class="btn-cancelar">Cancelar</button>
+    </div>
+  </form>
 </dialog>
 
   <div id="toast-container" class="toast-container"></div>

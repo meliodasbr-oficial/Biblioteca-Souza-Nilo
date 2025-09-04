@@ -8,7 +8,7 @@
 body {
   display: flex;
   min-height: 100vh;
-  background: linear-gradient(to bottom right, #00173f, #2b0a0a);
+  background: linear-gradient(to bottom right, #00173f, #b00000);
   color: white;
   overflow-x: hidden;
 }
@@ -16,7 +16,7 @@ body {
 .sidebar {
   width: 240px;
   min-width: 240px;
-  background: linear-gradient(to bottom, #00173f, #330000);
+  background: linear-gradient(to bottom, #00173f, #b00000);
   padding: 12px 10px;
   display: flex;
   flex-direction: column;
@@ -53,8 +53,8 @@ body {
 }
 
 .sidebar-nav .card {
-  margin-bottom: 10px;
-  padding: 12px 15px;
+  margin-bottom: 7px;
+  padding: 18px 10px;
   text-align: left;
   font-size: 16px;
   border-radius: 8px;
@@ -133,7 +133,7 @@ html {
 }
 
 .livros-card {
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: rgb(32 32 32 / 20%);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 12px;
   padding: 20px;
@@ -292,7 +292,7 @@ html {
   max-width: 100%;
   max-height: 350px;
   overflow-y: auto;
-  background-color: rgba(255,255,255,0.05);
+  background-color: rgba(0, 0, 0, 0.36);
   border: 1px solid rgba(255,255,255,0.2);
   border-radius: 10px;
   padding: 10px;
@@ -350,7 +350,7 @@ html {
   padding: 10px;
   margin-top: 10px;
   border-radius: 10px;
-  background-color: rgba(255,255,255,0.05);
+  background-color: rgba(0, 0, 0, 0.36);
   border: 1px solid rgba(255,255,255,0.2);
 }
 
@@ -380,7 +380,7 @@ html {
   position: fixed;
   top: 0;
   left: 0;
-  width: 240px;
+  width: 250px;
   height: 100vh;
   z-index: 2;
   background: linear-gradient(to bottom, #00173f, #330000);
@@ -512,7 +512,7 @@ html {
   content: "";
   position: absolute;
   inset: 4px;
-  background: #1e1e1e;
+  background: linear-gradient(to bottom right, #00173f, #b00000);
   border-radius: 16px;
   z-index: 0;
 }
@@ -564,7 +564,7 @@ dialog#dialogSelecionar {
   border-radius: 16px;
   width: min(680px, 92vw);
   padding: 20px;
-  background-color: #1e1e1e;
+  background: linear-gradient(to bottom right, #00173f, #b00000);
   color: #f5f5f5;
   box-shadow: 0 10px 30px rgba(255, 255, 255, 0.5);
   z-index: 9999;
@@ -614,7 +614,7 @@ dialog#dialogSelecionar::backdrop {
   border-radius: 12px;
   border: 1px solid #555;
   font-size: 16px;
-  background-color: #2a2a2a;
+  background-color: #00000099;
   color: #f5f5f5;
 }
 
@@ -639,7 +639,7 @@ dialog#dialogSelecionar::backdrop {
   padding: 12px;
   margin-bottom: 8px;
   flex-wrap: wrap;
-  background-color: #2a2a2a;
+  background-color: #00000095;
 }
 
 .dialog-item:last-child { margin-bottom: 0; }
@@ -677,5 +677,144 @@ dialog#dialogSelecionar::backdrop {
   border: none;
   padding: 6px 12px;
   border-radius: 8px;
+  cursor: pointer;
+}
+
+.livros-card th {
+  background-color: rgb(0 0 0 / 50%);
+}
+
+.card.ativo {
+  background: yellow;
+  color: black;
+  font-weight: bold;
+  border-radius: 6px;
+}
+
+/* Estilo do diálogo */
+#dialogEditarLivro::backdrop {
+  background: rgba(0, 0, 0, 0.5); /* sombra escura atrás do dialog */
+}
+
+#dialogEditarLivro {
+  border: none;
+  border-radius: 16px;
+  padding: 20px;
+  width: min(500px, 90vw);
+  max-width: 500px;
+  background: linear-gradient(to bottom right, #00173f, #b00000);
+  color: #fff;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+
+  /* Centralização */
+  position: fixed;   /* importante */
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+
+/* Header */
+#dialogEditarLivro .dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+#dialogEditarLivro .dialog-header h3 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+/* Botão de fechar */
+#dialogEditarLivro .btn-danger {
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+#dialogEditarLivro .btn-danger:hover {
+  color: #ffcccc;
+}
+
+/* Form inputs */
+#dialogEditarLivro input[type="text"],
+#dialogEditarLivro input[type="number"] {
+  width: 100%;
+  padding: 8px 10px;
+  margin-top: 5px;
+  border-radius: 6px;
+  border: none;
+  outline: none;
+  background-color: rgba(255,255,255,0.1);
+  color: #fff;
+  font-size: 1rem;
+}
+
+#dialogEditarLivro input::placeholder {
+  color: rgba(255,255,255,0.7);
+}
+
+/* Botões do formulário */
+#dialogEditarLivro button[type="submit"],
+#dialogEditarLivro .btn-cancelar {
+  padding: 10px 15px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 1rem;
+  transition: all 0.2s;
+}
+
+#dialogEditarLivro button[type="submit"] {
+  background-color: #ff4444;
+  color: #fff;
+}
+
+#dialogEditarLivro button[type="submit"]:hover {
+  background-color: #ff6666;
+}
+
+#dialogEditarLivro .btn-cancelar {
+  background-color: #444;
+  color: #fff;
+}
+
+#dialogEditarLivro .btn-cancelar:hover {
+  background-color: #666;
+}
+
+/* Layout do form */
+#form-editar-livro {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* Modal interno do gênero */
+#modalEditarGenero {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: linear-gradient(to bottom right, #00173f, #b00000);
+  color: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  z-index: 1000;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+#modalEditarGenero button {
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 1.2rem;
   cursor: pointer;
 }

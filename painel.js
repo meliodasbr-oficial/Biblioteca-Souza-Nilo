@@ -144,7 +144,7 @@ function criarBotao(texto, classe, onClick) {
 
 function aplicarEfeitoHoverELinha(tr) {
   tr.style.transition="background-color 0.3s";
-  tr.addEventListener("mouseenter",()=>{ tr.style.backgroundColor="#333"; tr.style.cursor="pointer"; });
+  tr.addEventListener("mouseenter",()=>{ tr.style.backgroundColor="#0603a366"; tr.style.cursor="pointer"; });
   tr.addEventListener("mouseleave",()=>{ if(!tr.classList.contains("selecionado")) tr.style.backgroundColor="transparent"; });
 }
 
@@ -174,6 +174,11 @@ Object.keys(botoes).forEach(cardId => {
   el.addEventListener("click", async () => {
     mostrarSecao(botoes[cardId]);
 
+        document.querySelectorAll(".card").forEach(c => c.classList.remove("ativo"));
+
+    // aplicar destaque no card atual
+    el.classList.add("ativo");
+    
     // carregamentos sob demanda
     if (cardId === "card-criar") await carregarGeneros();
     if (cardId === "card-livros") await carregarLivros();
@@ -260,7 +265,7 @@ async function carregarGeneros() {
     item.style.justifyContent = "space-between";
     item.style.alignItems = "center";
     item.style.padding = "6px 10px";
-    item.style.borderBottom = "1px solid #444";
+    item.style.borderBottom = "1px solid #ffffffff";
     item.style.cursor = "pointer";
 
     const span = document.createElement("span");
@@ -306,7 +311,7 @@ async function carregarGeneros() {
       if (!ativo) {
         item.classList.add("selecionado");
         btnExcluir.style.display = "inline-block";
-        item.style.backgroundColor = "#555";
+        item.style.backgroundColor = "#008b0777";
       }
     });
 
@@ -367,7 +372,10 @@ function criarTabelaLivros(livros) {
   ["Nome","Autor","Gênero","Quantidade","Volume","Prateleira",""].forEach(t => {
     const th = document.createElement("th");
     th.textContent = t;
-    th.style.borderBottom = "2px solid #ff4444";
+    th.style.borderBottom = "2px solid rgb(255, 68, 68)";
+    th.style.borderLeft = "1px solid #fff";
+    th.style.borderRight = "1px solid #fff";
+    th.style.borderTop = "1px solid #fff";
     th.style.padding = "8px";
     th.style.textAlign = "left";
     trh.appendChild(th);
@@ -376,27 +384,29 @@ function criarTabelaLivros(livros) {
   tabela.appendChild(thead);
 
   const tbody = document.createElement("tbody");
+
   livros.forEach(livro => {
     const tr = document.createElement("tr");
-    tr.style.borderBottom = "1px solid #444";
 
     ["nome","autor","genero","quantidade","volume","prateleira"].forEach(c => {
       const td = document.createElement("td");
       td.textContent = livro[c] || (c === "volume" ? "1" : "");
       td.style.padding = "8px";
+      td.style.border = "1px solid #fff";
       tr.appendChild(td);
     });
 
     const tdAcoes = document.createElement("td");
     tdAcoes.style.padding = "8px";
+    tdAcoes.style.border = "1px solid #fff";
 
+    // Botão REMOVER
     const btnRemover = criarBotao("Remover", "btn-remover", () => {
       abrirDialogoConfirmacao(
         `Deseja realmente remover o livro "${livro.nome}" volume ${livro.volume || "1"}?`,
         async () => {
           try {
             await deleteDoc(doc(db, "livros", livro.id));
-            // remove do espelho (coleção com nome do gênero)
             const generoRef = collection(db, livro.genero);
             const generoSnap = await getDocs(generoRef);
             const docGenero = generoSnap.docs.find(d => {
@@ -406,7 +416,6 @@ function criarTabelaLivros(livros) {
                      (data.volume || "1") === (livro.volume || "1");
             });
             if (docGenero) await deleteDoc(docGenero.ref);
-
             showToast(`Livro "${livro.nome}" removido!`, "success");
             await carregarLivros();
           } catch (err) {
@@ -416,6 +425,15 @@ function criarTabelaLivros(livros) {
       );
     });
     btnRemover.style.display = "none";
+
+    // Botão EDITAR
+    const btnEditar = criarBotao("Editar", "btn-editar", () => {
+      abrirDialogEditarLivro(livro);
+    });
+    btnEditar.style.display = "none";
+    btnEditar.style.backgroundColor = "#FFA500"; // cor diferente para destacar
+
+    tdAcoes.appendChild(btnEditar);
     tdAcoes.appendChild(btnRemover);
     tr.appendChild(tdAcoes);
 
@@ -430,7 +448,8 @@ function criarTabelaLivros(livros) {
       if (!selecionado) {
         tr.classList.add("selecionado");
         btnRemover.style.display = "inline-block";
-        tr.style.backgroundColor = "#555";
+        btnEditar.style.display = "inline-block";
+        tr.style.backgroundColor = "#008b0777";
       }
     });
 
@@ -440,6 +459,71 @@ function criarTabelaLivros(livros) {
   tabela.appendChild(tbody);
   return tabela;
 }
+
+// Função para abrir o dialog e preencher os dados
+function abrirDialogEditarLivro(livro) {
+  const dialog = document.getElementById("dialogEditarLivro");
+  dialog.showModal();
+
+  document.getElementById("editarNomeLivro").value = livro.nome;
+  document.getElementById("editarAutorLivro").value = livro.autor;
+  document.getElementById("editarGeneroLivro").value = livro.genero;
+  document.getElementById("editarQuantidadeLivro").value = livro.quantidade;
+  document.getElementById("editarPrateleiraLivro").value = livro.prateleira;
+
+  const form = document.getElementById("form-editar-livro");
+  form.onsubmit = async (e) => {
+    e.preventDefault();
+
+    const novoLivro = {
+      nome: document.getElementById("editarNomeLivro").value,
+      autor: document.getElementById("editarAutorLivro").value,
+      genero: document.getElementById("editarGeneroLivro").value,
+      quantidade: document.getElementById("editarQuantidadeLivro").value,
+      prateleira: document.getElementById("editarPrateleiraLivro").value,
+      volume: livro.volume || "1"
+    };
+
+    try {
+      // Atualiza livro principal
+      await setDoc(doc(db, "livros", livro.id), novoLivro);
+
+      // Se gênero mudou, mover documento para novo gênero
+      if (livro.genero !== novoLivro.genero) {
+        // Deleta no gênero antigo
+        const generoRef = collection(db, livro.genero);
+        const generoSnap = await getDocs(generoRef);
+        const docGenero = generoSnap.docs.find(d => {
+          const data = d.data();
+          return data.nome === livro.nome && data.autor === livro.autor && (data.volume || "1") === (livro.volume || "1");
+        });
+        if (docGenero) await deleteDoc(docGenero.ref);
+
+        // Adiciona no novo gênero
+        await addDoc(collection(db, novoLivro.genero), novoLivro);
+      } else {
+        // Se gênero não mudou, atualiza os dados no mesmo
+        const generoRef = collection(db, novoLivro.genero);
+        const generoSnap = await getDocs(generoRef);
+        const docGenero = generoSnap.docs.find(d => {
+          const data = d.data();
+          return data.nome === livro.nome && data.autor === livro.autor && (data.volume || "1") === (livro.volume || "1");
+        });
+        if (docGenero) await setDoc(docGenero.ref, novoLivro);
+      }
+
+      showToast(`Livro "${novoLivro.nome}" atualizado!`, "success");
+      dialog.close();
+      await carregarLivros();
+    } catch (err) {
+      showToast("Erro ao editar livro: " + err.message, "error");
+    }
+  };
+
+  document.getElementById("btnCancelarEditarLivro").onclick = () => dialog.close();
+  document.getElementById("btnFecharEditarLivro").onclick = () => dialog.close();
+}
+
 
 async function carregarLivros() {
   const snap = await getDocs(collection(db, "livros"));
@@ -595,25 +679,30 @@ function criarTabelaLeitores(leitores) {
 
   const thead = document.createElement("thead");
   const trh = document.createElement("tr");
+
   ["Nome","Turno","Turma","Nascimento",""].forEach(t => {
     const th = document.createElement("th");
     th.textContent = t;
-    th.style.borderBottom = "2px solid #ff4444";
+    th.style.borderBottom = "2px solid #ff4444"; 
+    th.style.borderLeft = "1px solid #fff";      
+    th.style.borderRight = "1px solid #fff";
+    th.style.borderTop = "1px solid #fff";
     th.style.padding = "8px";
     th.style.textAlign = "left";
+
     trh.appendChild(th);
   });
+
   thead.appendChild(trh);
   tabela.appendChild(thead);
 
   const tbody = document.createElement("tbody");
   leitores.forEach(L => {
     const tr = document.createElement("tr");
-    tr.style.borderBottom = "1px solid #444";
 
     const nascBR = (() => {
       if (!L.nascimento) return "";
-      const [y,m,d] = L.nascimento.split("-");
+      const [y, m, d] = L.nascimento.split("-");
       return `${d}/${m}/${y}`;
     })();
 
@@ -621,18 +710,23 @@ function criarTabelaLeitores(leitores) {
       const td = document.createElement("td");
       td.textContent = val || "";
       td.style.padding = "8px";
+      td.style.border = "1px solid #fff";
       tr.appendChild(td);
     });
 
     const tdAcoes = document.createElement("td");
     tdAcoes.style.padding = "8px";
-    const btnRemover = criarBotao("Remover","btn-remover", async () => {
+    tdAcoes.style.border = "1px solid #fff";
+
+    const btnRemover = criarBotao("Remover", "btn-remover", async () => {
       abrirDialogoConfirmacao(`Deseja remover o leitor "${L.nome}"?`, async () => {
         try {
           await deleteDoc(doc(db, "leitores", L.id));
           showToast(`Leitor "${L.nome}" removido!`, "success");
           await carregarLeitores();
-        } catch (err) { showToast("Erro: " + err.message, "error"); }
+        } catch (err) { 
+          showToast("Erro: " + err.message, "error"); 
+        }
       });
     });
     btnRemover.style.display = "none";
@@ -644,13 +738,13 @@ function criarTabelaLeitores(leitores) {
       const s = tr.classList.contains("selecionado");
       tbody.querySelectorAll("tr").forEach(l => {
         l.classList.remove("selecionado");
-        l.querySelectorAll("button").forEach(b => b.style.display="none");
+        l.querySelectorAll("button").forEach(b => b.style.display = "none");
         l.style.backgroundColor = "transparent";
       });
       if (!s) {
         tr.classList.add("selecionado");
         btnRemover.style.display = "inline-block";
-        tr.style.backgroundColor = "#555";
+        tr.style.backgroundColor = "#008b0777";
       }
     });
 
@@ -660,6 +754,7 @@ function criarTabelaLeitores(leitores) {
   tabela.appendChild(tbody);
   return tabela;
 }
+
 
 function exibirLeitoresRegistrados(leitores) {
   const container = document.getElementById("lista-leitores");
@@ -891,7 +986,10 @@ function criarTabelaEmprestimos(emprestimos) {
   ["Nome Leitor","Nome Livro","Turno • Turma","Data Pego","Data Entrega","Dias","Ações"].forEach(t => {
     const th = document.createElement("th");
     th.textContent = t;
-    th.style.borderBottom = "2px solid #ff4444";
+    th.style.borderBottom = "2px solid #ff4444"; 
+    th.style.borderLeft = "1px solid #fff";      
+    th.style.borderRight = "1px solid #fff";
+    th.style.borderTop = "1px solid #fff";
     th.style.padding = "8px";
     th.style.textAlign = "left";
     trh.appendChild(th);
@@ -903,7 +1001,7 @@ function criarTabelaEmprestimos(emprestimos) {
 
   emprestimos.forEach(e => {
     const tr = document.createElement("tr");
-    tr.style.borderBottom = "1px solid #444";
+    tr.style.borderBottom = "1px solid #ffffffff";
 
     const dataEntregaObj = parseDataBR(e.dataEntrega);
     const diasRestantes = calcularDiasRestantes(dataEntregaObj);
@@ -921,11 +1019,13 @@ function criarTabelaEmprestimos(emprestimos) {
       const td = document.createElement("td");
       td.textContent = val;
       td.style.padding = "8px";
+      td.style.border = "1px solid #fff";
       tr.appendChild(td);
     });
 
     const tdAcoes = document.createElement("td");
     tdAcoes.style.padding = "8px";
+    tdAcoes.style.border = "1px solid #fff";
     const btnEntregue = criarBotao("Entregue", "btn-entregue", async () => {
       try {
         await deleteDoc(doc(db, "emprestimos", e.id));
@@ -949,7 +1049,7 @@ function criarTabelaEmprestimos(emprestimos) {
       if (!s) {
         tr.classList.add("selecionado");
         btnEntregue.style.display = "inline-block";
-        tr.style.backgroundColor = "#555";
+        tr.style.backgroundColor = "#008b0777";
       }
     });
 
@@ -996,14 +1096,21 @@ function criarTabelaNotificacoes(emprestimos) {
 
   const thead = document.createElement("thead");
   const trh = document.createElement("tr");
+
   ["Nome Leitor","Nome Livro","Turno • Turma","Data Entrega","Status","Ações"].forEach(t => {
     const th = document.createElement("th");
     th.textContent = t;
+
+    // bordas do cabeçalho
     th.style.borderBottom = "2px solid #ff4444";
+    th.style.borderLeft = "1px solid #fff";
+    th.style.borderRight = "1px solid #fff";
+    th.style.borderTop = "1px solid #fff";
     th.style.padding = "8px";
     th.style.textAlign = "left";
     trh.appendChild(th);
   });
+
   thead.appendChild(trh);
   tabela.appendChild(thead);
 
@@ -1012,14 +1119,29 @@ function criarTabelaNotificacoes(emprestimos) {
 
   emprestimos.forEach(emp => {
     const tr = document.createElement("tr");
-    tr.style.borderBottom = "1px solid #444";
+    const tdNome = document.createElement("td"); 
+    tdNome.textContent = emp.nome || ""; 
+    tdNome.style.padding = "8px"; 
+    tdNome.style.border = "1px solid #fff";
+    tr.appendChild(tdNome);
 
-    const tdNome = document.createElement("td"); tdNome.textContent = emp.nome || ""; tdNome.style.padding="8px"; tr.appendChild(tdNome);
-    const tdLivro = document.createElement("td"); tdLivro.textContent = emp.livro || ""; tdLivro.style.padding="8px"; tr.appendChild(tdLivro);
+    const tdLivro = document.createElement("td"); 
+    tdLivro.textContent = emp.livro || ""; 
+    tdLivro.style.padding = "8px"; 
+    tdLivro.style.border = "1px solid #fff";
+    tr.appendChild(tdLivro);
 
-    const tdTT = document.createElement("td"); tdTT.textContent = `${emp.turno} • ${emp.turma}`; tdTT.style.padding="8px"; tr.appendChild(tdTT);
+    const tdTT = document.createElement("td"); 
+    tdTT.textContent = `${emp.turno} • ${emp.turma}`; 
+    tdTT.style.padding = "8px"; 
+    tdTT.style.border = "1px solid #fff";
+    tr.appendChild(tdTT);
 
-    const tdEntrega = document.createElement("td"); tdEntrega.textContent = emp.dataEntrega || ""; tdEntrega.style.padding="8px"; tr.appendChild(tdEntrega);
+    const tdEntrega = document.createElement("td"); 
+    tdEntrega.textContent = emp.dataEntrega || ""; 
+    tdEntrega.style.padding = "8px"; 
+    tdEntrega.style.border = "1px solid #fff";
+    tr.appendChild(tdEntrega);
 
     const tdStatus = document.createElement("td");
     const dEntrega = parseDataBR(emp.dataEntrega);
@@ -1032,11 +1154,14 @@ function criarTabelaNotificacoes(emprestimos) {
     }
     tdStatus.textContent = status;
     if (status === "Não Entregue") tdStatus.style.color = "red";
-    tdStatus.style.padding="8px";
+    tdStatus.style.padding = "8px";
+    tdStatus.style.border = "1px solid #fff";
     tr.appendChild(tdStatus);
 
     const tdAcoes = document.createElement("td");
-    tdAcoes.style.padding="8px";
+    tdAcoes.style.padding = "8px";
+    tdAcoes.style.border = "1px solid #fff";
+
     const btnEntregue = criarBotao("Entregue","btn-entregue", async () => {
       try {
         await deleteDoc(doc(db, "emprestimos", emp.id));
@@ -1060,7 +1185,7 @@ function criarTabelaNotificacoes(emprestimos) {
       if (!s) {
         tr.classList.add("selecionado");
         btnEntregue.style.display="inline-block";
-        tr.style.backgroundColor="#555";
+        tr.style.backgroundColor="#008b0777";
       }
     });
 
