@@ -383,7 +383,7 @@ html {
   width: 250px;
   height: 100vh;
   z-index: 2;
-  background: linear-gradient(to bottom, #00173f, #330000);
+  background: linear-gradient(to bottom, #005dffab, #930000bf);
 }
 
 .lista-section,
@@ -818,6 +818,7 @@ dialog#dialogSelecionar::backdrop {
   font-size: 1.2rem;
   cursor: pointer;
 }
+
 
 
 
