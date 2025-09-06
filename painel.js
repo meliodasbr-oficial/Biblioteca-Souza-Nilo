@@ -1,11 +1,9 @@
-// ======= IMPORTS FIREBASE =======
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
 import {
   getFirestore, collection, addDoc, getDocs, doc, setDoc, updateDoc, deleteDoc, query, where
 } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
-// ======= CONFIG FIREBASE =======
 const firebaseConfig = {
   apiKey: "AIzaSyDsDQ8AzInwgdA8gO9XOTIiqVUtOH5FYNQ",
   authDomain: "biblioteca-souza-nilo.firebaseapp.com",
@@ -436,8 +434,6 @@ function criarTabelaLivros(livros) {
 function abrirDialogEditarLivro(livro) {
   const dialog = document.getElementById("dialogEditarLivro");
   dialog.showModal();
-
-  // Preenche os campos
   document.getElementById("editarNomeLivro").value = livro.nome;
   document.getElementById("editarAutorLivro").value = livro.autor;
   document.getElementById("editarGeneroLivro").value = livro.genero;
@@ -446,11 +442,7 @@ function abrirDialogEditarLivro(livro) {
   document.getElementById("editarVolumeLivro").value = livro.volume || "1";
 
   const form = document.getElementById("form-editar-livro");
-
-  // Remove handlers antigos para evitar "salvamento fantasma"
   form.onsubmit = null;
-
-  // Salvar alterações
   form.onsubmit = async (e) => {
   e.preventDefault();
 
@@ -785,14 +777,11 @@ async function filtrarLeitores() {
 inputPesquisarLeitor.addEventListener("input", filtrarLeitores);
 selectTurnoFiltro.addEventListener("change", () => { atualizarTurmasFiltroLeitores(); filtrarLeitores(); });
 selectTurmaFiltro.addEventListener("change", filtrarLeitores);
-
-// Ao abrir a seção de lista de leitores
 document.getElementById("card-lista-leitores").addEventListener("click", () => {
   selectTurnoFiltro.value = "";
   selectTurmaFiltro.innerHTML = "<option value=''>Selecione...</option>";
 });
 
-// ======= DIALOGO DE SELEÇÃO (LEITOR / LIVRO) =======
 const dialogSelecionar = document.getElementById("dialogSelecionar");
 const dialogTitulo = document.getElementById("dialogTitulo");
 const btnFecharDialog = document.getElementById("btnFecharDialog");
@@ -816,7 +805,6 @@ function abrirDialogoSelecionar(titulo, gerarListaCallback) {
   gerarListaCallback("");
 }
 
-// ======= EMPRÉSTIMOS =======
 const secRegistrarEmp = document.getElementById("secao-registrar-emprestimo");
 const turnoEmprestimoEl = secRegistrarEmp.querySelector("#turnoEmprestimo");
 const turmaEmprestimoEl = secRegistrarEmp.querySelector("#turmaEmprestimo");
@@ -947,7 +935,6 @@ document.getElementById("form-registrar-emprestimo").addEventListener("submit", 
   }
 });
 
-// ======= LISTA DE EMPRÉSTIMOS + FILTROS =======
 const secListaEmp = document.getElementById("secao-lista-emprestimos");
 const pesquisaEmprestimosEl = secListaEmp.querySelector("#pesquisaEmprestimos");
 const turnoEmprestimoFiltroEl = secListaEmp.querySelector("#turnoEmprestimoFiltro");
@@ -1072,7 +1059,6 @@ async function carregarEmprestimos() {
     );
   }
 
-  // Ordena por data de empréstimo
   emprestimos.sort((a,b) => parseDataBR(a.dataEmprestimo) - parseDataBR(b.dataEmprestimo));
 
   const container = document.getElementById("lista-emprestimos");
@@ -1084,7 +1070,6 @@ async function carregarEmprestimos() {
   container.appendChild(criarTabelaEmprestimos(emprestimos));
 }
 
-// ======= NOTIFICAÇÕES =======
 function criarTabelaNotificacoes(emprestimos) {
   const tabela = document.createElement("table");
   tabela.style.width = "100%";
@@ -1096,8 +1081,6 @@ function criarTabelaNotificacoes(emprestimos) {
   ["Nome Leitor","Nome Livro","Turno • Turma","Data Entrega","Status","Ações"].forEach(t => {
     const th = document.createElement("th");
     th.textContent = t;
-
-    // bordas do cabeçalho
     th.style.borderBottom = "2px solid #ff4444";
     th.style.borderLeft = "1px solid #fff";
     th.style.borderRight = "1px solid #fff";
@@ -1211,11 +1194,8 @@ async function carregarNotificacoes() {
   container.appendChild(criarTabelaNotificacoes(notificaveis));
 }
 
-// ======= AÇÕES INICIAIS =======
-// Esconde todas as seções no load
 window.addEventListener("load", async () => {
   Object.values(botoes).forEach(sec => { const el = document.getElementById(sec); if (el) el.style.display = "none"; });
-  // Pré-carrega listas base para modais/pesquisas
   await carregarGeneros();
   await carregarLivros();
   await carregarLeitores();
