@@ -20,7 +20,6 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// ======= LOGIN E LOGOUT =======
 onAuthStateChanged(auth, (user) => {
   if (!user) location.replace("login.html");
   else console.log("Usuário autenticado:", user.email);
@@ -35,7 +34,6 @@ document.getElementById("logoutBtn").addEventListener("click", () => {
     });
 });
 
-// ======= TOASTS =======
 const toastContainer = document.getElementById("toast-container");
 
 function showToast(message, type = "success", duration = 6000) {
@@ -55,23 +53,16 @@ function showToast(message, type = "success", duration = 6000) {
 
   toastContainer.appendChild(toast);
 
-  // Animar barra de duração
   const durationBar = toast.querySelector(".duration-bar");
   durationBar.style.animation = `durationBarAnim ${duration}ms linear forwards`;
-
-  // Manter toast visível pelo tempo definido e depois iniciar saída
   setTimeout(() => {
     toast.style.animation = "slideOut 0.5s forwards";
-
-    // Remover toast após a animação de saída
     setTimeout(() => {
       toast.remove();
     }, 120);
   }, duration);
 }
 
-
-// ======= DADOS ESTÁTICOS =======
 const turmasPorTurno = {
   "Manhã": [
     "1º Ano A","1º Ano B","1º Ano C","1º Ano D","1º Ano E",
@@ -91,7 +82,6 @@ const turmasPorTurno = {
   ]
 };
 
-// ======= UTILITÁRIOS =======
 function normalizarTexto(texto) {
   return (texto || "")
     .normalize("NFD")
@@ -148,7 +138,6 @@ function aplicarEfeitoHoverELinha(tr) {
   tr.addEventListener("mouseleave",()=>{ if(!tr.classList.contains("selecionado")) tr.style.backgroundColor="transparent"; });
 }
 
-// ======= CONTROLE DE SEÇÕES =======
 const botoes = {
   "card-registrar": "secao-registrar-livro",
   "card-leitores": "secao-registrar-leitor",
@@ -175,11 +164,7 @@ Object.keys(botoes).forEach(cardId => {
     mostrarSecao(botoes[cardId]);
 
         document.querySelectorAll(".card").forEach(c => c.classList.remove("ativo"));
-
-    // aplicar destaque no card atual
     el.classList.add("ativo");
-    
-    // carregamentos sob demanda
     if (cardId === "card-criar") await carregarGeneros();
     if (cardId === "card-livros") await carregarLivros();
     if (cardId === "card-lista-leitores") await carregarLeitores();
@@ -188,7 +173,6 @@ Object.keys(botoes).forEach(cardId => {
   });
 });
 
-// ======= DIALOG DE CONFIRMAÇÃO =======
 const dialogoConfirmacao = document.getElementById("dialogoConfirmacao");
 const dialogoMensagem = document.getElementById("dialogoMensagem");
 const btnSimDialog = document.getElementById("btnSimDialog");
@@ -210,7 +194,6 @@ btnCancelarDialog.addEventListener("click", () => {
   callbackConfirmacao = null;
 });
 
-// ======= MODAL DE GÊNERO (SELEÇÃO) =======
 let generosCadastrados = [];
 const inputGeneroLivro = document.getElementById("generoLivro");
 const modalGenero = document.getElementById("modalGenero");
@@ -244,7 +227,6 @@ function preencherListaGenerosNoModal() {
   });
 }
 
-// ======= CRUD GÊNEROS =======
 async function carregarGeneros() {
   const snapshot = await getDocs(collection(db, "generos"));
   const generos = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -276,19 +258,15 @@ async function carregarGeneros() {
         `Deseja excluir o gênero "${nome}"? Isso removerá todos os livros associados.`,
         async () => {
           try {
-            // apaga subcoleção com o nome do gênero (espelhada)
             const generoRef = collection(db, nome);
             const livrosDoGenero = await getDocs(generoRef);
             await Promise.all(livrosDoGenero.docs.map(d => deleteDoc(d.ref)));
-            // apaga livros em "livros" com esse gênero
             const qLivros = query(collection(db, "livros"), where("genero", "==", nome));
             const snapLivros = await getDocs(qLivros);
             await Promise.all(snapLivros.docs.map(d => deleteDoc(d.ref)));
-            // apaga registro do gênero
             const gSnap = await getDocs(collection(db,"generos"));
             const gDoc = gSnap.docs.find(dd => dd.data().nome === nome);
             if (gDoc) await deleteDoc(gDoc.ref);
-
             showToast(`Gênero "${nome}" removido com sucesso!`, "success");
             await carregarGeneros();
             await carregarLivros();
@@ -338,7 +316,6 @@ document.getElementById("form-criar-genero").addEventListener("submit", async (e
   }
 });
 
-// ======= CRUD LIVROS =======
 async function livroExiste(nome, autor, volume) {
   const n = normalizarTexto(nome);
   const a = normalizarTexto(autor);
@@ -355,11 +332,9 @@ async function livroExiste(nome, autor, volume) {
 async function salvarLivro(livroData) {
   const dataHora = new Date().toISOString();
   const proxId = await gerarProximoIdSequencial("livros");
-  await setDoc(doc(db, "livros", proxId), { ...livroData, registradoEm: dataHora });
-
-  // espelhar por coleção do gênero (nome da coleção = gênero)
+  await setDoc(doc(db, "livros", proxId), { ...livroData, registradoEm: dataHora, idLivro: proxId });
   const proxIdGenero = await gerarProximoIdSequencial(livroData.genero);
-  await setDoc(doc(db, livroData.genero, proxIdGenero), { ...livroData, registradoEm: dataHora });
+  await setDoc(doc(db, livroData.genero, proxIdGenero), { ...livroData, registradoEm: dataHora, idLivro: proxId });
 }
 
 function criarTabelaLivros(livros) {
@@ -399,8 +374,6 @@ function criarTabelaLivros(livros) {
     const tdAcoes = document.createElement("td");
     tdAcoes.style.padding = "8px";
     tdAcoes.style.border = "1px solid #fff";
-
-    // Botão REMOVER
     const btnRemover = criarBotao("Remover", "btn-remover", () => {
       abrirDialogoConfirmacao(
         `Deseja realmente remover o livro "${livro.nome}" volume ${livro.volume || "1"}?`,
@@ -411,9 +384,11 @@ function criarTabelaLivros(livros) {
             const generoSnap = await getDocs(generoRef);
             const docGenero = generoSnap.docs.find(d => {
               const data = d.data();
-              return data.nome === livro.nome &&
-                     data.autor === livro.autor &&
-                     (data.volume || "1") === (livro.volume || "1");
+              return (
+                data.nome === livro.nome &&
+                data.autor === livro.autor &&
+                (data.volume || "1") === (livro.volume || "1")
+              );
             });
             if (docGenero) await deleteDoc(docGenero.ref);
             showToast(`Livro "${livro.nome}" removido!`, "success");
@@ -425,13 +400,11 @@ function criarTabelaLivros(livros) {
       );
     });
     btnRemover.style.display = "none";
-
-    // Botão EDITAR
     const btnEditar = criarBotao("Editar", "btn-editar", () => {
       abrirDialogEditarLivro(livro);
     });
     btnEditar.style.display = "none";
-    btnEditar.style.backgroundColor = "#FFA500"; // cor diferente para destacar
+    btnEditar.style.backgroundColor = "#FFA500";
 
     tdAcoes.appendChild(btnEditar);
     tdAcoes.appendChild(btnRemover);
@@ -460,70 +433,98 @@ function criarTabelaLivros(livros) {
   return tabela;
 }
 
-// Função para abrir o dialog e preencher os dados
 function abrirDialogEditarLivro(livro) {
   const dialog = document.getElementById("dialogEditarLivro");
   dialog.showModal();
 
+  // Preenche os campos
   document.getElementById("editarNomeLivro").value = livro.nome;
   document.getElementById("editarAutorLivro").value = livro.autor;
   document.getElementById("editarGeneroLivro").value = livro.genero;
   document.getElementById("editarQuantidadeLivro").value = livro.quantidade;
   document.getElementById("editarPrateleiraLivro").value = livro.prateleira;
+  document.getElementById("editarVolumeLivro").value = livro.volume || "1";
 
   const form = document.getElementById("form-editar-livro");
+
+  // Remove handlers antigos para evitar "salvamento fantasma"
+  form.onsubmit = null;
+
+  // Salvar alterações
   form.onsubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    const novoLivro = {
-      nome: document.getElementById("editarNomeLivro").value,
-      autor: document.getElementById("editarAutorLivro").value,
-      genero: document.getElementById("editarGeneroLivro").value,
-      quantidade: document.getElementById("editarQuantidadeLivro").value,
-      prateleira: document.getElementById("editarPrateleiraLivro").value,
-      volume: livro.volume || "1"
-    };
-
-    try {
-      // Atualiza livro principal
-      await setDoc(doc(db, "livros", livro.id), novoLivro);
-
-      // Se gênero mudou, mover documento para novo gênero
-      if (livro.genero !== novoLivro.genero) {
-        // Deleta no gênero antigo
-        const generoRef = collection(db, livro.genero);
-        const generoSnap = await getDocs(generoRef);
-        const docGenero = generoSnap.docs.find(d => {
-          const data = d.data();
-          return data.nome === livro.nome && data.autor === livro.autor && (data.volume || "1") === (livro.volume || "1");
-        });
-        if (docGenero) await deleteDoc(docGenero.ref);
-
-        // Adiciona no novo gênero
-        await addDoc(collection(db, novoLivro.genero), novoLivro);
-      } else {
-        // Se gênero não mudou, atualiza os dados no mesmo
-        const generoRef = collection(db, novoLivro.genero);
-        const generoSnap = await getDocs(generoRef);
-        const docGenero = generoSnap.docs.find(d => {
-          const data = d.data();
-          return data.nome === livro.nome && data.autor === livro.autor && (data.volume || "1") === (livro.volume || "1");
-        });
-        if (docGenero) await setDoc(docGenero.ref, novoLivro);
-      }
-
-      showToast(`Livro "${novoLivro.nome}" atualizado!`, "success");
-      dialog.close();
-      await carregarLivros();
-    } catch (err) {
-      showToast("Erro ao editar livro: " + err.message, "error");
-    }
+  const novoLivro = {
+    nome: document.getElementById("editarNomeLivro").value,
+    autor: document.getElementById("editarAutorLivro").value,
+    genero: document.getElementById("editarGeneroLivro").value,
+    quantidade: document.getElementById("editarQuantidadeLivro").value,
+    prateleira: document.getElementById("editarPrateleiraLivro").value,
+    volume: document.getElementById("editarVolumeLivro").value.trim() || "1"
   };
+
+  try {
+    await setDoc(doc(db, "livros", livro.id), novoLivro);
+    const generoRef = collection(db, novoLivro.genero);
+    const q = query(generoRef, where("idLivro", "==", livro.id));
+    const snap = await getDocs(q);
+
+    if (!snap.empty) {
+      const docGenero = snap.docs[0];
+      await setDoc(docGenero.ref, {
+        ...novoLivro,
+        idLivro: livro.id
+      });
+    } else {
+      console.warn("Documento de gênero não encontrado para atualização");
+    }
+
+    showToast(`Livro "${novoLivro.nome}" atualizado!`, "success");
+    dialog.close();
+    await carregarLivros();
+  } catch (err) {
+    showToast("Erro ao editar livro: " + err.message, "error");
+  }
+};
 
   document.getElementById("btnCancelarEditarLivro").onclick = () => dialog.close();
   document.getElementById("btnFecharEditarLivro").onclick = () => dialog.close();
-}
 
+  const inputGeneroLivroEditar = document.getElementById("editarGeneroLivro");
+  const modalGeneroEditar = document.getElementById("modalEditarGenero");
+  const listaGenerosEditarModal = document.getElementById("listaGenerosEditarModal");
+  const btnFecharModalGeneroEditar = document.getElementById("fecharModalEditarGenero");
+
+  inputGeneroLivroEditar.addEventListener("click", () => {
+    preencherListaGenerosNoModalEditar();
+    modalGeneroEditar.style.display = "flex";
+  });
+
+  btnFecharModalGeneroEditar.addEventListener("click", () => modalGeneroEditar.style.display = "none");
+  modalGeneroEditar.addEventListener("click", (e) => { 
+    if (e.target === modalGeneroEditar) modalGeneroEditar.style.display = "none";
+  });
+
+  function preencherListaGenerosNoModalEditar() {
+    listaGenerosEditarModal.innerHTML = "";
+    if (generosCadastrados.length === 0) {
+      listaGenerosEditarModal.innerHTML = "<li>Nenhum gênero cadastrado.</li>";
+      return;
+    }
+    generosCadastrados.forEach(g => {
+      const li = document.createElement("li");
+      li.textContent = g;
+      li.style.cursor = "pointer";
+      li.style.padding = "8px 12px";
+      li.style.borderRadius = "4px";
+      li.addEventListener("click", () => {
+        inputGeneroLivroEditar.value = g;
+        modalGeneroEditar.style.display = "none";
+      });
+      listaGenerosEditarModal.appendChild(li);
+    });
+  }
+}
 
 async function carregarLivros() {
   const snap = await getDocs(collection(db, "livros"));
@@ -539,7 +540,6 @@ async function carregarLivros() {
   container.appendChild(criarTabelaLivros(livros));
 }
 
-// Submit livro
 document.getElementById("form-registrar-livro").addEventListener("submit", async (e) => {
   e.preventDefault();
   const nome = document.getElementById("nomeLivro").value.trim();
@@ -569,7 +569,6 @@ document.getElementById("form-registrar-livro").addEventListener("submit", async
   }
 });
 
-// Pesquisa livros (na lista)
 const inputPesquisaLivros = document.querySelector("#secao-livros-registrados .livros-pesquisa");
 if (inputPesquisaLivros) {
   inputPesquisaLivros.addEventListener("input", async (e) => {
@@ -591,8 +590,6 @@ if (inputPesquisaLivros) {
   });
 }
 
-// ======= CRUD LEITORES =======
-// (IDs duplicados no HTML; vamos escopar por seção)
 const secRegistrarLeitor = document.getElementById("secao-registrar-leitor");
 const nomeLeitorEl = secRegistrarLeitor.querySelector("#nomeLeitor");
 const turnoLeitorEl = secRegistrarLeitor.querySelector("#turnoLeitor");
@@ -655,7 +652,6 @@ secRegistrarLeitor.querySelectorAll(".btn-cancelar").forEach(btn => {
   });
 });
 
-// Lista de leitores (seção com IDs duplicados, escopar aqui também)
 const secListaLeitores = document.getElementById("secao-lista-leitores");
 const inputPesquisarLeitor = secListaLeitores.querySelector(".leitores-pesquisa");
 const selectTurnoFiltro = secListaLeitores.querySelector("#turnoLeitor");
