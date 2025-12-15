@@ -384,6 +384,7 @@ html {
   height: 100vh;
   z-index: 2;
   background: linear-gradient(to bottom, #005dffab, #930000bf);
+  overflow-y: auto;
 }
 
 .lista-section,
@@ -423,7 +424,7 @@ html {
   color: #fff;
   padding: 12px 20px;
   border-radius: 12px;
-  font-size: 15px;
+  font-size: 18px;
   min-width: 220px;
   box-shadow: 0 4px 10px rgba(0,0,0,0.3);
   opacity: 0;
@@ -451,7 +452,7 @@ html {
 }
 
 #dialogoConfirmacao {
-  position: relative;
+  position: fixed;
   border: none;
   border-radius: 20px;
   padding: 20px;
@@ -819,6 +820,54 @@ dialog#dialogSelecionar::backdrop {
   cursor: pointer;
 }
 
+.btn-virar-ano {
+  margin: 10px 0;
+  padding: 10px 16px;
+  background: #ff9800;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+}
 
+.btn-virar-ano:hover {
+  background: #e68900;
+}
 
+/* MODAL */
+.modal-ano {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
 
+.modal-conteudo input {
+  width: 100%;
+  padding: 8px;
+  margin: 10px 0;
+}
+
+.modal-botoes {
+  display: flex;
+  justify-content: space-between;
+}
+
+.modal-botoes button {
+  padding: 8px 14px;
+  cursor: pointer;
+}
+
+.erro-senha {
+  color: red;
+  margin-top: 8px;
+}
+
+.toast .reload-info {
+  font-size: 0.85rem;
+  opacity: 0.8;
+  margin-top: 4px;
+}

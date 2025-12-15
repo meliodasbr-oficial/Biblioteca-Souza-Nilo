@@ -1,7 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
 import {
-  getFirestore, collection, addDoc, getDocs, doc, setDoc, updateDoc, deleteDoc, query, where
+  getFirestore, collection, addDoc, getDocs, doc, setDoc, updateDoc, deleteDoc, query, where, orderBy, limit
 } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -17,6 +17,12 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+
+let cacheLeitores = [];
+let cacheLivros = [];
+let cacheEmprestimos = [];
+let dialogCallback = null;
+let callbackConfirmacao = null;
 
 onAuthStateChanged(auth, (user) => {
   if (!user) location.replace("login.html");
@@ -43,37 +49,56 @@ function showToast(message, type = "success", duration = 6000) {
   else if (type === "error") emoji = "❌";
   else if (type === "warning") emoji = "⚠️";
 
+  // 👉 acrescenta aviso SOMENTE se for recarregar
+  const avisoReload =
+    type !== "error"
+      ? `<div class="reload-info">🔄 A página será recarregada automaticamente aguarde para atualizar os dados...</div>`
+      : "";
+
   toast.innerHTML = `
     <span class="emoji">${emoji}</span>
     <span class="message">${message}</span>
+    ${avisoReload}
     <div class="duration-bar"></div>
   `;
 
   toastContainer.appendChild(toast);
 
+  // ❌ ERRO: não sai da tela, não recarrega
+  if (type === "error") {
+    const bar = toast.querySelector(".duration-bar");
+    if (bar) bar.remove();
+    return;
+  }
+
+  // ✅ SUCCESS / WARNING
   const durationBar = toast.querySelector(".duration-bar");
   durationBar.style.animation = `durationBarAnim ${duration}ms linear forwards`;
+
   setTimeout(() => {
     toast.style.animation = "slideOut 0.5s forwards";
+
     setTimeout(() => {
       toast.remove();
+      location.reload();
     }, 120);
   }, duration);
 }
+
 
 const turmasPorTurno = {
   "Manhã": [
     "1º Ano A","1º Ano B","1º Ano C","1º Ano D","1º Ano E",
     "2º Ano A","2º Ano B","2º Ano C","2º Ano D","2º Ano E",
     "3º Ano A","3º Ano B","3º Ano C","3º Ano D","3º Ano E",
-    "Outros"
+    "Cidadão"
   ],
   "Tarde": [
     "6º Ano A","6º Ano B","6º Ano C","6º Ano D","6º Ano E",
     "7º Ano A","7º Ano B","7º Ano C","7º Ano D","7º Ano E",
     "8º Ano A","8º Ano B","8º Ano C","8º Ano D","8º Ano E",
     "9º Ano A","9º Ano B","9º Ano C","9º Ano D","9º Ano E",
-    "Outros"
+    "Cidadão"
   ],
   "Noite": [
     "EJA 1","EJA 2","Cursos"
@@ -88,17 +113,6 @@ function normalizarTexto(texto) {
     .trim();
 }
 
-async function gerarProximoIdSequencial(nomeColecao) {
-  const snapshot = await getDocs(collection(db, nomeColecao));
-  if (snapshot.empty) return "01";
-  const numeros = snapshot.docs
-    .map(d => parseInt(d.id))
-    .filter(n => !isNaN(n))
-    .sort((a,b) => a - b);
-  let prox = 1;
-  for (const n of numeros) { if (n === prox) prox++; else break; }
-  return String(prox).padStart(2, "0");
-}
 
 function parseDataBR(dataStr) {
   if (!dataStr) return null;
@@ -175,7 +189,6 @@ const dialogoConfirmacao = document.getElementById("dialogoConfirmacao");
 const dialogoMensagem = document.getElementById("dialogoMensagem");
 const btnSimDialog = document.getElementById("btnSimDialog");
 const btnCancelarDialog = document.getElementById("btnCancelarDialog");
-let callbackConfirmacao = null;
 
 function abrirDialogoConfirmacao(mensagem, onConfirm) {
   dialogoMensagem.textContent = mensagem;
@@ -304,8 +317,7 @@ document.getElementById("form-criar-genero").addEventListener("submit", async (e
   if (generosCadastrados.includes(nome)) return showToast(`Gênero "${nome}" já existe.`, "warning");
 
   try {
-    const proxId = await gerarProximoIdSequencial("generos");
-    await setDoc(doc(db, "generos", proxId), { nome });
+    await addDoc(collection(db, "generos"), { nome });
     showToast(`Gênero "${nome}" criado com sucesso!`, "success");
     e.target.reset();
     await carregarGeneros();
@@ -314,25 +326,31 @@ document.getElementById("form-criar-genero").addEventListener("submit", async (e
   }
 });
 
-async function livroExiste(nome, autor, volume) {
+function livroExiste(nome, autor, volume) {
   const n = normalizarTexto(nome);
   const a = normalizarTexto(autor);
   const v = (volume || "1").trim();
-  const snap = await getDocs(collection(db, "livros"));
-  return snap.docs.some(d => {
-    const data = d.data();
-    return normalizarTexto(data.nome) === n &&
-           normalizarTexto(data.autor) === a &&
-           (data.volume ? String(data.volume).trim() : "1") === v;
-  });
+
+  return cacheLivros.some(l =>
+    normalizarTexto(l.nome) === n &&
+    normalizarTexto(l.autor) === a &&
+    String(l.volume || "1").trim() === v
+  );
 }
 
 async function salvarLivro(livroData) {
   const dataHora = new Date().toISOString();
-  const proxId = await gerarProximoIdSequencial("livros");
-  await setDoc(doc(db, "livros", proxId), { ...livroData, registradoEm: dataHora, idLivro: proxId });
-  const proxIdGenero = await gerarProximoIdSequencial(livroData.genero);
-  await setDoc(doc(db, livroData.genero, proxIdGenero), { ...livroData, registradoEm: dataHora, idLivro: proxId });
+
+  const docRef = await addDoc(collection(db, "livros"), {
+    ...livroData,
+    registradoEm: dataHora
+  });
+
+  cacheLivros.push({
+    id: docRef.id,
+    ...livroData,
+    registradoEm: dataHora
+  });
 }
 
 function criarTabelaLivros(livros) {
@@ -390,6 +408,7 @@ function criarTabelaLivros(livros) {
             });
             if (docGenero) await deleteDoc(docGenero.ref);
             showToast(`Livro "${livro.nome}" removido!`, "success");
+            cacheLivros = cacheLivros.filter(l => l.id !== livro.id);
             await carregarLivros();
           } catch (err) {
             showToast("Erro ao remover livro: " + err.message, "error");
@@ -460,7 +479,10 @@ function abrirDialogEditarLivro(livro) {
     const generoRef = collection(db, novoLivro.genero);
     const q = query(generoRef, where("idLivro", "==", livro.id));
     const snap = await getDocs(q);
-
+    const idx = cacheLivros.findIndex(l => l.id === livro.id);
+if (idx !== -1) {
+  cacheLivros[idx] = { id: livro.id, ...novoLivro };
+}
     if (!snap.empty) {
       const docGenero = snap.docs[0];
       await setDoc(docGenero.ref, {
@@ -470,7 +492,6 @@ function abrirDialogEditarLivro(livro) {
     } else {
       console.warn("Documento de gênero não encontrado para atualização");
     }
-
     showToast(`Livro "${novoLivro.nome}" atualizado!`, "success");
     dialog.close();
     await carregarLivros();
@@ -519,16 +540,23 @@ function abrirDialogEditarLivro(livro) {
 }
 
 async function carregarLivros() {
-  const snap = await getDocs(collection(db, "livros"));
-  const livros = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-  livros.sort((a,b) => a.nome.localeCompare(b.nome, 'pt', {sensitivity:'base'}));
+  if (!cacheLivros.length) {
+    const snap = await getDocs(collection(db, "livros"));
+    cacheLivros = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  }
+
+  const livros = [...cacheLivros].sort((a, b) =>
+    a.nome.localeCompare(b.nome, 'pt', { sensitivity: 'base' })
+  );
 
   const container = document.getElementById("lista-livros-registrados");
   container.innerHTML = "";
-  if (livros.length === 0) {
+
+  if (!livros.length) {
     container.innerHTML = '<p class="sem-livros">Nenhum livro registrado.</p>';
     return;
   }
+
   container.appendChild(criarTabelaLivros(livros));
 }
 
@@ -547,7 +575,7 @@ document.getElementById("form-registrar-livro").addEventListener("submit", async
   if (!generosCadastrados.includes(genero)) {
     return showToast("Gênero inválido. Selecione um gênero existente.", "warning");
   }
-  if (await livroExiste(nome, autor, volume)) {
+  if (livroExiste(nome, autor, volume)) {
     return showToast(`Livro "${nome}" volume ${volume} já cadastrado.`, "warning");
   }
 
@@ -563,23 +591,26 @@ document.getElementById("form-registrar-livro").addEventListener("submit", async
 
 const inputPesquisaLivros = document.querySelector("#secao-livros-registrados .livros-pesquisa");
 if (inputPesquisaLivros) {
-  inputPesquisaLivros.addEventListener("input", async (e) => {
-    const termo = normalizarTexto(e.target.value);
-    const snap = await getDocs(collection(db, "livros"));
-    let livros = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    livros = livros.filter(l =>
-      ["nome","autor","genero","prateleira","volume"].some(c =>
-        normalizarTexto(l[c]).includes(termo)
-      )
-    );
-    const container = document.getElementById("lista-livros-registrados");
-    container.innerHTML = "";
-    if (livros.length === 0) {
-      container.innerHTML = '<p class="sem-livros">Nenhum livro encontrado.</p>';
-      return;
-    }
-    container.appendChild(criarTabelaLivros(livros));
-  });
+  inputPesquisaLivros.addEventListener("input", (e) => {
+  const termo = normalizarTexto(e.target.value);
+
+  let livros = cacheLivros.filter(l =>
+    ["nome","autor","genero","prateleira","volume"].some(c =>
+      normalizarTexto(l[c]).includes(termo)
+    )
+  );
+
+  const container = document.getElementById("lista-livros-registrados");
+  container.innerHTML = "";
+
+  if (!livros.length) {
+    container.innerHTML = '<p class="sem-livros">Nenhum livro encontrado.</p>';
+    return;
+  }
+
+  container.appendChild(criarTabelaLivros(livros));
+});
+
 }
 
 const secRegistrarLeitor = document.getElementById("secao-registrar-leitor");
@@ -601,12 +632,13 @@ function preencherTurmasSelect(select, turno, primeiraOpc = "Selecione...") {
 }
 turnoLeitorEl.addEventListener("change", () => preencherTurmasSelect(turmaLeitorEl, turnoLeitorEl.value));
 
-async function leitorExiste(nome, turno, turma, nascimento) {
-  const snap = await getDocs(collection(db, "leitores"));
-  return snap.docs.some(d => {
-    const L = d.data();
-    return L.nome === nome && L.turno === turno && L.turma === turma && L.nascimento === nascimento;
-  });
+function leitorExiste(nome, turno, turma, nascimento) {
+  return cacheLeitores.some(l =>
+    normalizarTexto(l.nome) === normalizarTexto(nome) &&
+    l.turno === turno &&
+    l.turma === turma &&
+    l.nascimento === nascimento
+  );
 }
 
 document.getElementById("form-registrar-leitor").addEventListener("submit", async (e) => {
@@ -619,15 +651,20 @@ document.getElementById("form-registrar-leitor").addEventListener("submit", asyn
   if (!nome || !turno || !turma || !nascimento) {
     return showToast("Preencha todos os campos corretamente.", "warning");
   }
-  if (await leitorExiste(nome, turno, turma, nascimento)) {
-    return showToast(`Leitor "${nome}" já está registrado.`, "warning");
-  }
+  if (leitorExiste(nome, turno, turma, nascimento)) {
+  return showToast(`Leitor "${nome}" já está registrado.`, "warning");
+}
 
   try {
-    const proxId = await gerarProximoIdSequencial("leitores");
-    await setDoc(doc(db, "leitores", proxId), {
-      nome, turno, turma, nascimento, registradoEm: new Date().toISOString()
-    });
+    const docRef = await addDoc(collection(db, "leitores"), {
+  nome, turno, turma, nascimento, registradoEm: new Date().toISOString()
+});
+
+cacheLeitores.push({
+  id: docRef.id,
+  nome, turno, turma, nascimento
+});
+
     showToast(`Leitor "${nome}" registrado!`, "success");
     e.target.reset();
     turmaLeitorEl.innerHTML = "<option value=''>Selecione...</option>";
@@ -654,11 +691,18 @@ function atualizarTurmasFiltroLeitores() {
 }
 
 async function carregarLeitores() {
-  const snap = await getDocs(collection(db, "leitores"));
-  let leitores = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-  leitores.sort((a,b) => a.nome.localeCompare(b.nome, 'pt', {sensitivity:'base'}));
+  if (!cacheLeitores.length) {
+    const snap = await getDocs(collection(db, "leitores"));
+    cacheLeitores = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  }
+
+  const leitores = [...cacheLeitores].sort((a,b) =>
+    a.nome.localeCompare(b.nome, 'pt', { sensitivity:'base' })
+  );
+
   exibirLeitoresRegistrados(leitores);
 }
+
 
 function criarTabelaLeitores(leitores) {
   const tabela = document.createElement("table");
@@ -710,8 +754,10 @@ function criarTabelaLeitores(leitores) {
       abrirDialogoConfirmacao(`Deseja remover o leitor "${L.nome}"?`, async () => {
         try {
           await deleteDoc(doc(db, "leitores", L.id));
+          cacheLeitores = cacheLeitores.filter(l => l.id !== L.id);
           showToast(`Leitor "${L.nome}" removido!`, "success");
           await carregarLeitores();
+
         } catch (err) { 
           showToast("Erro: " + err.message, "error"); 
         }
@@ -754,23 +800,27 @@ function exibirLeitoresRegistrados(leitores) {
   container.appendChild(criarTabelaLeitores(leitores));
 }
 
-async function filtrarLeitores() {
+function filtrarLeitores() {
   const termo = normalizarTexto(inputPesquisarLeitor.value);
   const turno = selectTurnoFiltro.value;
   const turma = selectTurmaFiltro.value;
 
-  const snap = await getDocs(collection(db, "leitores"));
-  let leitores = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  let leitores = [...cacheLeitores];
 
   if (turno) leitores = leitores.filter(l => l.turno === turno);
   if (turma) leitores = leitores.filter(l => l.turma === turma);
   if (termo) {
     leitores = leitores.filter(l =>
-      ["nome","turno","turma"].some(c => normalizarTexto(l[c]).includes(termo))
+      ["nome","turno","turma"].some(c =>
+        normalizarTexto(l[c]).includes(termo)
+      )
     );
   }
 
-  leitores.sort((a,b) => a.nome.localeCompare(b.nome, 'pt', {sensitivity:'base'}));
+  leitores.sort((a,b) =>
+    a.nome.localeCompare(b.nome, 'pt', { sensitivity:'base' })
+  );
+
   exibirLeitoresRegistrados(leitores);
 }
 
@@ -787,11 +837,9 @@ const dialogTitulo = document.getElementById("dialogTitulo");
 const btnFecharDialog = document.getElementById("btnFecharDialog");
 const pesquisaDialog = document.getElementById("pesquisaDialog");
 const listaDialog = document.getElementById("listaDialog");
-let dialogCallback = null;
 
 btnFecharDialog.addEventListener("click", () => {
   dialogSelecionar.close();
-  dialogCallback = null;
 });
 pesquisaDialog.addEventListener("input", () => {
   if (typeof dialogCallback === "function") dialogCallback(pesquisaDialog.value);
@@ -821,76 +869,80 @@ nomeEmprestimoEl.addEventListener("click", async () => {
   const turma = turmaEmprestimoEl.value;
   if (!turno || !turma) return showToast("Selecione primeiro Turno e Turma.", "warning");
 
-  abrirDialogoSelecionar("Selecionar Leitor", async (filtro) => {
-    const snap = await getDocs(collection(db, "leitores"));
-    const leitores = snap.docs.map(d => ({ id: d.id, ...d.data() }))
-      .filter(l => l.turno === turno && l.turma === turma)
-      .filter(l => {
-        const f = normalizarTexto(filtro);
-        return normalizarTexto(l.nome).includes(f) || (l.nascimento || "").includes(filtro);
-      });
-
-    listaDialog.innerHTML = "";
-    if (!leitores.length) {
-      listaDialog.innerHTML = "<li>Nenhum leitor encontrado.</li>";
-      return;
-    }
-
-    leitores.forEach(l => {
-      const li = document.createElement("li");
-      li.className = "dialog-item";
-      const nascBR = l.nascimento ? (() => {
-        const [y,m,d] = l.nascimento.split("-");
-        return `${d}/${m}/${y}`;
-      })() : "";
-      li.innerHTML = `
-        <div class="dialog-item-info">
-          <div class="dialog-item-title">${l.nome}</div>
-          <div class="dialog-item-subtitle">${l.turno} • Turma: ${l.turma} • ${nascBR}</div>
-        </div>
-        <button class="btn-selecionar">Selecionar</button>
-      `;
-      li.querySelector(".btn-selecionar").addEventListener("click", () => {
-        nomeEmprestimoEl.value = l.nome;
-        dialogSelecionar.close();
-      });
-      listaDialog.appendChild(li);
+  abrirDialogoSelecionar("Selecionar Leitor", (filtro) => {
+  const leitores = cacheLeitores
+    .filter(l => l.turno === turno && l.turma === turma)
+    .filter(l => {
+      const f = normalizarTexto(filtro);
+      return normalizarTexto(l.nome).includes(f) ||
+             (l.nascimento || "").includes(filtro);
     });
+
+  listaDialog.innerHTML = "";
+  if (!leitores.length) {
+    listaDialog.innerHTML = "<li>Nenhum leitor encontrado.</li>";
+    return;
+  }
+
+  leitores.forEach(l => {
+    const li = document.createElement("li");
+    li.className = "dialog-item";
+
+    const nascBR = l.nascimento
+      ? (() => { const [y,m,d]=l.nascimento.split("-"); return `${d}/${m}/${y}` })()
+      : "";
+
+    li.innerHTML = `
+      <div class="dialog-item-info">
+        <div class="dialog-item-title">${l.nome}</div>
+        <div class="dialog-item-subtitle">${l.turno} • ${l.turma} • ${nascBR}</div>
+      </div>
+      <button class="btn-selecionar">Selecionar</button>
+    `;
+
+    li.querySelector(".btn-selecionar").onclick = () => {
+      nomeEmprestimoEl.value = l.nome;
+      dialogSelecionar.close();
+    };
+
+    listaDialog.appendChild(li);
   });
+});
 });
 
 livroEmprestimoEl.addEventListener("click", async () => {
-  abrirDialogoSelecionar("Selecionar Livro", async (filtro) => {
-    const snap = await getDocs(collection(db, "livros"));
-    const livros = snap.docs.map(d => ({ id: d.id, ...d.data() }))
-      .filter(l => {
-        const f = normalizarTexto(filtro);
-        return [l.nome, l.autor, l.genero, l.prateleira].some(x => normalizarTexto(x).includes(f));
-      });
-
-    listaDialog.innerHTML = "";
-    if (!livros.length) {
-      listaDialog.innerHTML = "<li>Nenhum livro encontrado.</li>";
-      return;
-    }
-
-    livros.forEach(l => {
-      const li = document.createElement("li");
-      li.className = "dialog-item";
-      li.innerHTML = `
-        <div class="dialog-item-info">
-          <div class="dialog-item-title">${l.nome}</div>
-          <div class="dialog-item-subtitle">Autor: ${l.autor} • Prateleira: ${l.prateleira || ''} • ${l.genero} • Vol: ${l.volume || 1}</div>
-        </div>
-        <button class="btn-selecionar">Selecionar</button>
-      `;
-      li.querySelector(".btn-selecionar").addEventListener("click", () => {
-        livroEmprestimoEl.value = `${l.nome} (Vol ${l.volume || 1})`;
-        dialogSelecionar.close();
-      });
-      listaDialog.appendChild(li);
-    });
+  abrirDialogoSelecionar("Selecionar Livro", (filtro) => {
+  const livros = cacheLivros.filter(l => {
+    const f = normalizarTexto(filtro);
+    return [l.nome, l.autor, l.genero, l.prateleira]
+      .some(x => normalizarTexto(x).includes(f));
   });
+
+  listaDialog.innerHTML = "";
+  if (!livros.length) {
+    listaDialog.innerHTML = "<li>Nenhum livro encontrado.</li>";
+    return;
+  }
+
+  livros.forEach(l => {
+    const li = document.createElement("li");
+    li.className = "dialog-item";
+    li.innerHTML = `
+      <div class="dialog-item-info">
+        <div class="dialog-item-title">${l.nome}</div>
+        <div class="dialog-item-subtitle">
+          Autor: ${l.autor} • ${l.genero} • Vol: ${l.volume || 1}
+        </div>
+      </div>
+      <button class="btn-selecionar">Selecionar</button>
+    `;
+    li.querySelector(".btn-selecionar").onclick = () => {
+      livroEmprestimoEl.value = `${l.nome} (Vol ${l.volume || 1})`;
+      dialogSelecionar.close();
+    };
+    listaDialog.appendChild(li);
+  });
+});
 });
 
 document.getElementById("form-registrar-emprestimo").addEventListener("submit", async (e) => {
@@ -923,8 +975,12 @@ document.getElementById("form-registrar-emprestimo").addEventListener("submit", 
   };
 
   try {
-    const proxId = await gerarProximoIdSequencial("emprestimos");
-    await setDoc(doc(db, "emprestimos", proxId), emprestimoData);
+    const docRef = await addDoc(collection(db, "emprestimos"), emprestimoData);
+
+cacheEmprestimos.push({
+  id: docRef.id,
+  ...emprestimoData
+});
     showToast(`Empréstimo de "${livroSelecionado}" registrado!`, "success");
     e.target.reset();
     turmaEmprestimoEl.innerHTML = "<option value=''>Selecione...</option>";
@@ -1012,6 +1068,7 @@ function criarTabelaEmprestimos(emprestimos) {
     const btnEntregue = criarBotao("Entregue", "btn-entregue", async () => {
       try {
         await deleteDoc(doc(db, "emprestimos", e.id));
+        cacheEmprestimos = cacheEmprestimos.filter(x => x.id !== e.id);
         showToast(`Empréstimo de "${e.livro}" entregue!`, "success");
         await carregarEmprestimos();
         await carregarNotificacoes();
@@ -1044,29 +1101,39 @@ function criarTabelaEmprestimos(emprestimos) {
 }
 
 async function carregarEmprestimos() {
+  if (!cacheEmprestimos.length) {
+    const snap = await getDocs(collection(db, "emprestimos"));
+    cacheEmprestimos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  }
+
   const turno = turnoEmprestimoFiltroEl.value;
   const turma = turmaEmprestimoFiltroEl.value;
   const termo = normalizarTexto(pesquisaEmprestimosEl.value);
 
-  const snap = await getDocs(collection(db, "emprestimos"));
-  let emprestimos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  let emprestimos = [...cacheEmprestimos];
 
   if (turno) emprestimos = emprestimos.filter(e => e.turno === turno);
   if (turma) emprestimos = emprestimos.filter(e => e.turma === turma);
   if (termo) {
     emprestimos = emprestimos.filter(e =>
-      [e.nome, e.livro, e.turno, e.turma].some(v => normalizarTexto(v).includes(termo))
+      [e.nome, e.livro, e.turno, e.turma]
+        .some(v => normalizarTexto(v).includes(termo))
     );
   }
 
-  emprestimos.sort((a,b) => parseDataBR(a.dataEmprestimo) - parseDataBR(b.dataEmprestimo));
+  emprestimos.sort(
+    (a, b) => parseDataBR(a.dataEmprestimo) - parseDataBR(b.dataEmprestimo)
+  );
 
   const container = document.getElementById("lista-emprestimos");
   container.innerHTML = "";
+
   if (!emprestimos.length) {
-    container.innerHTML = '<p class="sem-emprestimos">Nenhum empréstimo registrado.</p>';
+    container.innerHTML =
+      '<p class="sem-emprestimos">Nenhum empréstimo registrado.</p>';
     return;
   }
+
   container.appendChild(criarTabelaEmprestimos(emprestimos));
 }
 
@@ -1144,9 +1211,11 @@ function criarTabelaNotificacoes(emprestimos) {
     const btnEntregue = criarBotao("Entregue","btn-entregue", async () => {
       try {
         await deleteDoc(doc(db, "emprestimos", emp.id));
+        cacheEmprestimos = cacheEmprestimos.filter(e => e.id !== emp.id);
         showToast(`Empréstimo de "${emp.livro}" por "${emp.nome}" finalizado!`, "success");
         await carregarEmprestimos();
         await carregarNotificacoes();
+
       } catch (err) { showToast("Erro: " + err.message, "error"); }
     });
     btnEntregue.style.display = "none";
@@ -1176,9 +1245,11 @@ function criarTabelaNotificacoes(emprestimos) {
 }
 
 async function carregarNotificacoes() {
-  const snap = await getDocs(collection(db, "emprestimos"));
-  let emprestimos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-  const notificaveis = emprestimos.filter(e => {
+  if (!cacheEmprestimos.length) {
+    await carregarEmprestimos();
+  }
+
+  const notificaveis = cacheEmprestimos.filter(e => {
     const d = parseDataBR(e.dataEntrega);
     if (!d) return false;
     const dias = calcularDiasRestantes(d);
@@ -1187,12 +1258,276 @@ async function carregarNotificacoes() {
 
   const container = document.getElementById("lista-notificacoes");
   container.innerHTML = "";
+
   if (!notificaveis.length) {
     container.innerHTML = '<p class="sem-notificacoes">Não há notificações ainda.</p>';
     return;
   }
+
   container.appendChild(criarTabelaNotificacoes(notificaveis));
 }
+
+
+const ADMINS = [
+  "claudinea.pereira@biblioteca.souzanilo.com",
+  "valdineia.biblioteca@biblioteca.souzanilo.com",
+  "marluci.alvarenga@biblioteca.souzanilo.com",
+  "richardaghamenon.dev@biblioteca.souzanilo.com",
+  "aghamenontoberlock@console.admin.com"
+];
+
+function usuarioEhAdmin(user) {
+  return user && ADMINS.includes(user.email);
+}
+
+function calcularNovaTurmaETurno(leitor) {
+  let { turno, turma } = leitor;
+
+  const troca = (de, para) => turma.replace(de, para);
+
+  if (turno === "Manhã") {
+    if (turma.startsWith("1º Ano")) turma = troca("1º Ano", "2º Ano");
+    else if (turma.startsWith("2º Ano")) turma = troca("2º Ano", "3º Ano");
+    else if (turma.startsWith("3º Ano")) turma = "Cidadão";
+  }
+
+  else if (turno === "Tarde") {
+    if (turma.startsWith("6º Ano")) turma = troca("6º Ano", "7º Ano");
+    else if (turma.startsWith("7º Ano")) turma = troca("7º Ano", "8º Ano");
+    else if (turma.startsWith("8º Ano")) turma = troca("8º Ano", "9º Ano");
+    else if (turma.startsWith("9º Ano")) {
+      turma = troca("9º Ano", "1º Ano");
+      turno = "Manhã";
+    }
+  }
+
+  return { turno, turma };
+}
+
+async function criarBackupLeitores(leitores) {
+  await addDoc(collection(db, "backup_leitores"), {
+    criadoEm: new Date().toISOString(),
+    leitores
+  });
+}
+
+async function registrarLogAnoLetivo(total, alunosMovidos) {
+  const agora = new Date();
+
+  await addDoc(collection(db, "logs_ano_letivo"), {
+    data: agora.toLocaleDateString("pt-BR"),
+    hora: agora.toLocaleTimeString("pt-BR"),
+    alunosMovidos: total,
+    lista: alunosMovidos,
+    criadoEm: agora.toISOString()
+  });
+}
+
+async function virarAnoLetivo() {
+  if (!usuarioEhAdmin(auth.currentUser)) {
+    showToast("Acesso negado.", "error");
+    return;
+  }
+
+  const snap = await getDocs(collection(db, "leitores"));
+  const leitores = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+  await criarBackupLeitores(leitores);
+
+  let total = 0;
+  let listaMovidos = [];
+
+  for (const leitor of leitores) {
+    const novo = calcularNovaTurmaETurno(leitor);
+
+    if (novo.turma !== leitor.turma || novo.turno !== leitor.turno) {
+      total++;
+
+      listaMovidos.push({
+        nome: leitor.nome,
+        turnoAntes: leitor.turno,
+        turmaAntes: leitor.turma,
+        turnoDepois: novo.turno,
+        turmaDepois: novo.turma
+      });
+
+      await updateDoc(doc(db, "leitores", leitor.id), novo);
+    }
+  }
+
+  await registrarLogAnoLetivo(total, listaMovidos);
+  await carregarLeitores();
+
+  showToast(`🎓 Ano letivo atualizado! Alunos movidos: ${total}`, "warning");
+}
+
+async function restaurarUltimoBackup() {
+  if (!usuarioEhAdmin(auth.currentUser)) {
+    showToast("Acesso negado.", "error");
+    return;
+  }
+
+  const snap = await getDocs(
+    query(collection(db, "backup_leitores"), orderBy("criadoEm", "desc"), limit(1))
+  );
+
+  if (snap.empty) {
+    showToast("Nenhum backup encontrado.", "warning");
+    return;
+  }
+
+  const backup = snap.docs[0].data().leitores;
+  const atual = await getDocs(collection(db, "leitores"));
+  await Promise.all(atual.docs.map(d => deleteDoc(d.ref)));
+
+  for (const leitor of backup) {
+  await setDoc(doc(db, "leitores", leitor.id), leitor);
+}
+
+
+  await carregarLeitores();
+  showToast("♻️ Backup restaurado com sucesso!", "success");
+}
+
+async function gerarRelatorioPDF() {
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF("p", "mm", "a4");
+
+  const snap = await getDocs(
+    query(
+      collection(db, "logs_ano_letivo"),
+      orderBy("criadoEm", "desc"),
+      limit(1)
+    )
+  );
+
+  if (snap.empty) {
+    showToast("Nenhum log encontrado.", "warning");
+    return;
+  }
+
+  const log = snap.docs[0].data();
+
+  let y = 20;
+
+  // ===== CABEÇALHO =====
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(14);
+  pdf.text(
+    "ESCOLA ESTADUAL PROFESSOR SOUZA NILO",
+    105,
+    y,
+    { align: "center" }
+  );
+
+  y += 8;
+
+  pdf.setFontSize(12);
+  pdf.text(
+    "Relatório de Virada do Ano Letivo",
+    105,
+    y,
+    { align: "center" }
+  );
+
+  y += 6;
+
+  // Linha separadora
+  pdf.setLineWidth(0.5);
+  pdf.line(20, y, 190, y);
+
+  y += 10;
+
+  // ===== DADOS GERAIS =====
+  pdf.setFont("helvetica", "normal");
+  pdf.setFontSize(11);
+
+  pdf.text(`Data: ${log.data}`, 20, y);
+  y += 6;
+  pdf.text(`Hora: ${log.hora}`, 20, y);
+  y += 6;
+  pdf.text(`Total de alunos movidos: ${log.alunosMovidos}`, 20, y);
+
+  y += 10;
+
+  // ===== TÍTULO LISTA =====
+  pdf.setFont("helvetica", "bold");
+  pdf.text("Lista de Alunos Atualizados", 20, y);
+  y += 6;
+
+  pdf.setFont("helvetica", "normal");
+
+  // Linha fina
+  pdf.line(20, y, 190, y);
+  y += 6;
+
+  // ===== LISTA =====
+  log.lista.forEach((aluno, index) => {
+    if (y > 270) {
+      pdf.addPage();
+      y = 20;
+    }
+
+    pdf.setFont("helvetica", "bold");
+    pdf.text(`${index + 1}. ${aluno.nome}`, 20, y);
+    y += 5;
+
+    pdf.setFont("helvetica", "normal");
+    pdf.text(
+      `De: ${aluno.turnoAntes} - ${aluno.turmaAntes}`,
+      25,
+      y
+    );
+    y += 5;
+
+    pdf.text(
+      `Para: ${aluno.turnoDepois} - ${aluno.turmaDepois}`,
+      25,
+      y
+    );
+
+    y += 8;
+  });
+
+  // ===== RODAPÉ =====
+  const totalPages = pdf.getNumberOfPages();
+  for (let i = 1; i <= totalPages; i++) {
+    pdf.setPage(i);
+    pdf.setFontSize(9);
+    pdf.setTextColor(120);
+    pdf.text(
+      `Gerado automaticamente pelo Sistema da Biblioteca • Página ${i} de ${totalPages}`,
+      105,
+      290,
+      { align: "center" }
+    );
+  }
+
+  pdf.save("relatorio_ano_letivo_souza_nilo.pdf");
+}
+
+const dialogSenhaAno = document.getElementById("dialogSenhaAno");
+const senhaAno = document.getElementById("senhaAno");
+const mostrarSenha = document.getElementById("mostrarSenha");
+const confirmarAno = document.getElementById("confirmarAno");
+
+mostrarSenha.addEventListener("change", () => {
+  senhaAno.type = mostrarSenha.checked ? "text" : "password";
+});
+
+confirmarAno.addEventListener("click", async () => {
+  if (senhaAno.value !== "Anoletivosouzanilo") {
+    showToast("Senha incorreta!", "error");
+    return;
+  }
+  dialogSenhaAno.close();
+  senhaAno.value = "";
+  await virarAnoLetivo();
+});
+
+window.gerarRelatorioPDF = gerarRelatorioPDF;
+window.virarAnoLetivo = virarAnoLetivo;
+window.restaurarUltimoBackup = restaurarUltimoBackup;
 
 window.addEventListener("load", async () => {
   Object.values(botoes).forEach(sec => { const el = document.getElementById(sec); if (el) el.style.display = "none"; });
@@ -1202,4 +1537,3 @@ window.addEventListener("load", async () => {
   await carregarEmprestimos();
   await carregarNotificacoes();
 });
-

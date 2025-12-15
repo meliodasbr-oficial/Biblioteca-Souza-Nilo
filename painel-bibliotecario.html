@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="shortcut icon" href="souzanilologo.png" type="souzanilologo" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <title>Central Bibliotecário</title>
   <link rel="stylesheet" href="painel.css" />
   <script type="module" src="console-block.js"></script>
@@ -172,6 +173,11 @@
           <label>Turma:
             <select id="turmaLeitor" required></select>
           </label>
+          <div style="margin-bottom:10px; display:flex; gap:10px;">
+  <button class="btn-warning" onclick="virarAnoLetivo()">🔄 Virar Ano Letivo</button>
+  <button class="btn-info" onclick="gerarRelatorioPDF()">📄 Gerar PDF</button>
+  <button class="btn-danger" onclick="restaurarUltimoBackup()">♻️ Restaurar Backup</button>
+</div>
         </div>
       <div id="lista-leitores" id="lista-leitores-registrados">
         <p class="sem-leitores">Nenhum leitor registrado.</p>
@@ -281,4 +287,17 @@
   <div id="toast-container" class="toast-container"></div>
   <script type="module" src="painel.js"></script>
 </body>
+
+<!--Dialog fianl de ano-->
+<dialog id="dialogSenhaAno">
+  <h3>Confirmar Virada de Ano</h3>
+  <input type="password" id="senhaAno" placeholder="Digite a senha" />
+  <label>
+    <input type="checkbox" id="mostrarSenha"> Mostrar senha
+  </label>
+  <br><br>
+  <button id="confirmarAno">OK</button>
+  <button onclick="dialogSenhaAno.close()">Cancelar</button>
+</dialog>
+
 </html>

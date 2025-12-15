@@ -1,6 +1,13 @@
 // ======= IMPORTS FIREBASE =======
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
-import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+import {
+  getFirestore,
+  collection,
+  getDocs,
+  query,
+  where,
+  orderBy
+} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
 // ======= CONFIG FIREBASE =======
 const firebaseConfig = {
@@ -16,10 +23,17 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+// ======= CACHE CONFIG =======
+const CACHE_LIVROS = "livros_cache";
+const CACHE_ATUALIZACAO = "livros_cache_ultima_atualizacao";
+const CACHE_TTL = 1000 * 60 * 60 * 6; // 6 horas
+
 // ======= REFERÊNCIAS =======
 const divGeneros = document.getElementById("generos");
 const divBotoes = document.getElementById("botoes-generos");
 const inputPesquisa = document.getElementById("pesquisa");
+const btnTema = document.getElementById("btn-tema");
+
 document.getElementById("btn-login").addEventListener("click", () => {
   window.location.href = "login.html";
 });
@@ -27,42 +41,115 @@ document.getElementById("btn-login").addEventListener("click", () => {
 const livrosPorGenero = {};
 let generoSelecionado = "Todos";
 
-// ======= BUSCAR LIVROS DO FIRESTORE =======
+// ======= LIMPAR CACHE ANTIGO =======
+function limparCacheAntigo() {
+  const ultima = localStorage.getItem(CACHE_ATUALIZACAO);
+  if (!ultima) return;
+
+  const tempo = Date.now() - new Date(ultima).getTime();
+  if (tempo > CACHE_TTL) {
+    localStorage.removeItem(CACHE_LIVROS);
+    localStorage.removeItem(CACHE_ATUALIZACAO);
+    location.reload();
+  }
+}
+function converterParaDate(valor) {
+  if (!valor) return null;
+
+  if (typeof valor.toDate === "function") {
+    return valor.toDate();
+  }
+
+  if (valor instanceof Date) {
+    return valor;
+  }
+
+  return new Date(valor);
+}
+
+// ======= CARREGAMENTO INTELIGENTE =======
 async function carregarLivros() {
-  const snapshot = await getDocs(collection(db, "livros"));
+  const cache = localStorage.getItem(CACHE_LIVROS);
+  const ultimaAtualizacao = localStorage.getItem(CACHE_ATUALIZACAO);
 
-  snapshot.forEach(doc => {
-    const livro = doc.data();
-    const genero = livro.genero || "Sem Gênero";
+  // Usa cache imediatamente
+  if (cache) {
+    Object.assign(livrosPorGenero, JSON.parse(cache));
+    criarBotoesGeneros();
+    renderizarLivros();
+  }
 
-    if (!livrosPorGenero[genero]) livrosPorGenero[genero] = [];
-    livrosPorGenero[genero].push(livro);
-  });
+  // Busca apenas livros novos
+  await buscarLivrosNovos(ultimaAtualizacao);
 
   criarBotoesGeneros();
   renderizarLivros();
 }
 
-// ======= CRIAR BOTÕES DE GÊNERO =======
+// ======= BUSCAR LIVROS NOVOS (registradoEm) =======
+async function buscarLivrosNovos(ultimaAtualizacao) {
+  let snap;
+
+  if (!ultimaAtualizacao) {
+    snap = await getDocs(collection(db, "livros"));
+  } else {
+    const q = query(
+      collection(db, "livros"),
+      where("registradoEm", ">", new Date(ultimaAtualizacao)),
+      orderBy("registradoEm", "asc")
+    );
+    snap = await getDocs(q);
+  }
+
+  if (snap.empty) return;
+
+  let ultimaData = ultimaAtualizacao;
+
+  snap.forEach(doc => {
+    const livro = { id: doc.id, ...doc.data() };
+    const genero = livro.genero || "Sem Gênero";
+
+    if (!livrosPorGenero[genero]) livrosPorGenero[genero] = [];
+    const jaExiste = livrosPorGenero[genero]
+  .some(l => l.id === livro.id);
+
+if (!jaExiste) {
+  livrosPorGenero[genero].push(livro);
+}
+
+    const data = converterParaDate(livro.registradoEm);
+    if (data) {
+      ultimaData = data.toISOString();
+    }
+  });
+
+  if (ultimaData) {
+    localStorage.setItem(CACHE_ATUALIZACAO, ultimaData);
+  }
+
+  localStorage.setItem(CACHE_LIVROS, JSON.stringify(livrosPorGenero));
+}
+
+// ======= BOTÕES DE GÊNERO =======
 function criarBotoesGeneros() {
   divBotoes.innerHTML = "";
 
   const todosBtn = document.createElement("button");
   todosBtn.textContent = "Todos";
-  todosBtn.classList.add("botao-genero", "ativo");
-  todosBtn.addEventListener("click", () => filtrarPorGenero("Todos"));
+  todosBtn.className = "botao-genero ativo";
+  todosBtn.onclick = () => filtrarPorGenero("Todos");
   divBotoes.appendChild(todosBtn);
 
   for (const genero in livrosPorGenero) {
     const btn = document.createElement("button");
     btn.textContent = genero;
-    btn.classList.add("botao-genero");
-    btn.addEventListener("click", () => filtrarPorGenero(genero));
+    btn.className = "botao-genero";
+    btn.onclick = () => filtrarPorGenero(genero);
     divBotoes.appendChild(btn);
   }
 }
 
-// ======= FILTRAR POR GÊNERO =======
+// ======= FILTRO DE GÊNERO =======
 function filtrarPorGenero(genero) {
   generoSelecionado = genero;
 
@@ -86,19 +173,19 @@ function renderizarLivros() {
     if (!livros || livros.length === 0) return;
 
     const divGenero = document.createElement("div");
-    divGenero.classList.add("genero");
+    divGenero.className = "genero";
 
-    const tituloGenero = document.createElement("h2");
-    tituloGenero.classList.add("titulo-genero");
-    tituloGenero.textContent = genero;
-    divGenero.appendChild(tituloGenero);
+    const titulo = document.createElement("h2");
+    titulo.className = "titulo-genero";
+    titulo.textContent = genero;
+    divGenero.appendChild(titulo);
 
     const divLivros = document.createElement("div");
-    divLivros.classList.add("livros");
+    divLivros.className = "livros";
 
     livros.forEach(livro => {
       const card = document.createElement("div");
-      card.classList.add("livro-card");
+      card.className = "livro-card";
       card.innerHTML = `
         <h3>${livro.nome}</h3>
         <p><strong>Autor:</strong> ${livro.autor}</p>
@@ -116,49 +203,31 @@ function renderizarLivros() {
   aplicarFiltroPesquisa();
 }
 
-// ======= PESQUISA POR TEXTO =======
+// ======= PESQUISA =======
 inputPesquisa.addEventListener("input", aplicarFiltroPesquisa);
 
 function aplicarFiltroPesquisa() {
   const termo = inputPesquisa.value.toLowerCase();
-  const generos = document.querySelectorAll(".genero");
-
-  generos.forEach(genero => {
-    let tem = false;
-    const tituloGenero = genero.querySelector(".titulo-genero");
-    const livros = genero.querySelectorAll(".livro-card");
-
-    livros.forEach(livro => {
-      const texto = livro.textContent.toLowerCase();
-      const visivel = texto.includes(termo);
-      livro.style.display = visivel ? "block" : "none";
-      if (visivel) tem = true;
-    });
-
-    tituloGenero.style.display = tem ? "block" : "none";
+  document.querySelectorAll(".livro-card").forEach(card => {
+    card.style.display = card.textContent.toLowerCase().includes(termo)
+      ? "block"
+      : "none";
   });
 }
 
-const btnTema = document.getElementById('btn-tema');
-
-// Verifica se o usuário já escolheu tema
-if(localStorage.getItem('tema') === 'escuro') {
-  document.body.classList.add('tema-escuro');
-  btnTema.textContent = '☀️'; // ícone sol
+// ======= TEMA =======
+if (localStorage.getItem("tema") === "escuro") {
+  document.body.classList.add("tema-escuro");
+  btnTema.textContent = "☀️";
 }
 
-btnTema.addEventListener('click', () => {
-  document.body.classList.toggle('tema-escuro');
-  
-  if(document.body.classList.contains('tema-escuro')) {
-    btnTema.textContent = '☀️'; // ícone sol
-    localStorage.setItem('tema', 'escuro');
-  } else {
-    btnTema.textContent = '🌙'; // ícone lua
-    localStorage.setItem('tema', 'claro');
-  }
-});
-
+btnTema.onclick = () => {
+  document.body.classList.toggle("tema-escuro");
+  const escuro = document.body.classList.contains("tema-escuro");
+  btnTema.textContent = escuro ? "☀️" : "🌙";
+  localStorage.setItem("tema", escuro ? "escuro" : "claro");
+};
 
 // ======= INICIAR =======
+limparCacheAntigo();
 carregarLivros();
