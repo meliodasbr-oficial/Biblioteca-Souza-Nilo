@@ -1,33 +1,303 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <link rel="shortcut icon" href="souzanilologo.png" type="image/png">
-  <title>Biblioteca Souza Nilo</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Playwrite+AU+NSW:wght@100..400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
-  <script type="module" src="console-block.js"></script>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Portfólio Richard Aghamenon">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style2.css">
+    <title>Portfolio | Richard Aghamenon</title>
+    <!--Font-->
 </head>
+
 <body>
-  <header>
-    <img src="souzanilologo.png" alt="Logo Souza Nilo" class="logo-insigna" draggable="false">
-    <div class="titulo-escola">Escola Estadual Professor Souza Nilo</div>
-    <button id="btn-login">Login Bibliotecário</button>
-  </header>
+    <header class="header">
+        <a href="#" class="logo">Richard Aghamenon</a>
 
-  <div class="container">
-    <input type="text" class="campo-pesquisa" id="pesquisa" placeholder="Pesquisar livros...">
-    <div id="botoes-generos" class="botoes-generos"></div>
-    <div id="generos" class="livros"></div>
-  </div>
+        <i class="fa-solid fa-bars" id="menu-icon"></i>
 
-  <!-- Botão flutuante de Tema -->
-  <button id="btn-tema" class="btn-flutuante">🌙</button>
+        <nav class="navbar">
+            <a href="#home" class="active">Início</a>
+            <a href="#serviços">Serviços</a>
+            <a href="#habilidades">Habilidades</a>
+            <a href="#educação">Educação</a>
+            <a href="#projetos">Projetos</a>
+            <a href="#contato">Contato</a>
+        </nav>
+    </header>
 
-  <script type="module" src="script.js"></script>
+    <section class="home" id="home">
+        <div class="home-img">
+            <img src="Richard.jpg" alt="">
+        </div>
+
+        <div class="home-content">
+            <h1>Olá, me chamo<span>Richard Aghamenon</span></h1>
+            <h3 class="typing-text">Eu <span1></span1></h3>
+            <p>Me chamo Richard Aghamenon, tenho 18 anos e o 3º ano do ensino médio completo, formado em técnico em administração. Sou apaixonado por programação e estou desenvolvendo minhas habilidades como desenvolvedor front-end iniciante. Minha jornada no mundo da tecnologia começou com a curiosidade de entender como as interfaces são construídas e evoluiu para o desejo de criar experiências digitais impactantes e funcionais. Atualmente, estou aprofundando meus conhecimentos em HTML, CSS e JavaScript, e sempre busco aprender novas ferramentas e tecnologias para melhorar a qualidade dos meus projetos. Gosto de enfrentar desafios, resolver problemas e entregar soluções criativas que façam a diferença para os usuários. Com um foco constante em crescimento e aprimoramento, meu objetivo é evoluir como desenvolvedor e contribuir para projetos que ofereçam valor real, proporcionando interfaces eficientes e agradáveis.</p>
+
+            <div class="social-icon">
+                <a href="https://github.com/meliodasbr-oficial"><i class="fa-brands fa-github"></i></a>
+                <a href="https://www.instagram.com/meliodasbr_ofc/"><i class="fa-brands fa-instagram"></i></a>
+            </div>
+
+            <div class="home-button">
+                <button class="button button2" onclick="window.location.href='contato.html';">
+                    <p>Contato</p>
+                </button>                
+            </div>
+        </div>
+    </section>
+
+    <section class="serviços" id="serviços">
+        <h2 class="heading">Serviços</h2>
+            <div class="service-container">
+                <div data-aos="zoom-in">
+                    <div class="single-service">
+                        <div class="content">
+                            <span class="icon">
+                                <i class="fas fa-laptop-code"></i>
+                            </span>
+                            <h3 class="title">Desenvolvedor Front-End</h3>
+                            <p class="description">Sou um desenvolvedor front-end iniciante, apaixonado por criar interfaces interativas. Estou aprendendo HTML, CSS e JavaScript, e busco sempre me atualizar nas tendências do desenvolvimento web. Meu objetivo é construir soluções funcionais e agradáveis, e estou empolgado para mostrar meu trabalho e colaborar em novos projetos!</p>
+                        </div>
+                        <span class="circle-before"></span>
+                    </div>
+                </div>
+                <div data-aos="zoom-in">
+                    <div class="single-service">
+                        <div class="content">
+                            <span class="icon">
+                                <i class="fa-solid fa-user-tie"></i>
+                            </span>
+                            <h3 class="title">Técnico em Administração</h3>
+                            <p class="description">Sou formado em Técnico em Administração, complementando minha formação em programação e desenvolvimento web, proporcionando uma visão mais ampla de gestão e finanças. Acredito que essa combinação de habilidades me tornará um profissional mais completo, capaz de desenvolver soluções eficazes.</p>
+                        </div>
+                        <span class="circle-before"></span>
+                    </div>
+                </div>
+            </div>
+    </section>
+
+    <section class="habilidades" id="habilidades">
+        <h2 class="heading">Habilidades</h2>
+        <div class="container">
+            <div class="row" id="habilidadesContainer">
+                <div data-aos="flip-left">
+                    <div class="bar">
+                        <div class="info">
+                            <img src="0860612490d9d39c85fe5736ac5fb7b7.png" alt="">
+                            <span>HTML</span>
+                        </div>
+                    </div>
+                </div>
+                <div data-aos="flip-left">
+                    <div class="bar">
+                        <div class="info">
+                            <img src="fccd6e39db0b1c83fcb40df36d7e76c7.png" alt="">
+                            <span>CSS</span>
+                        </div>
+                    </div>
+                </div>
+                <div data-aos="flip-left">
+                    <div class="bar">
+                        <div class="info">
+                            <img src="778f6844d2441d444aac5e421b4355ec.png" alt="">
+                            <span>JavaScript</span>
+                        </div>
+                    </div>
+                </div>
+                <div data-aos="flip-left">
+                    <div class="bar">
+                        <div class="info">
+                            <img src="excel.png" alt="">
+                            <span>Excel Avançado</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="educação" id="educação">
+        <h2 class="heading">
+            Educação
+        </h2>
+        <div class="timeline">
+            <div data-aos="zoom-in-up">
+                <div class="container left">
+                    <div class="content">
+                        <div class="tag">
+                            <h2>Ensino Médio - Completo</h2>
+                            <div class="desc">
+                                <p>Escola Estadual Professor Souza Nilo</p>
+                                <p>2023 - 2025</p>
+                                <p></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div data-aos="zoom-in-up">
+                    <div class="container right">
+                        <div class="content">
+                            <div class="tag">
+                                <h2>Técnico em Administração</h2>
+                            </div>
+                            <div class="desc">
+                                <p>Escola Estadual Professor Souza Nilo</p>
+                                <p>2024 - 2025</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div data-aos="zoom-in-up">
+                    <div class="container left">
+                        <div class="content">
+                            <div class="tag">
+                                <h2>Educação Financeira Pessoal</h2>
+                            </div>
+                            <div class="desc">
+                                <p>Escola Nacional de Administração Pública</p>
+                                <p>2025</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div data-aos="zoom-in-up">
+                    <div class="container right">
+                        <div class="content">
+                            <div class="tag">
+                                <h2>Programação Online</h2>
+                                <div class="desc">
+                                    <p>OneBitCode</p>
+                                    <p>HTML</p>
+                                    <p>CSS</p>
+                                    <p>JavaScript</p>
+                                    <p>2024</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div data-aos="zoom-in-up">
+                    <div class="container left">
+                        <div class="content">
+                            <div class="tag">
+                                <h2>Curso de Excel Avançado</h2>
+                                <div class="desc">
+                                    <p>Excel Avançado</p>
+                                    <p>2024</p>
+                                    <p></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    </section>
+
+    <section class="projetos" id="projetos">
+        <h2 class="heading">Projetos</h2>
+            <div class="projetos-container">
+                <div data-aos="zoom-in">
+                    <div class="single-projetos">
+                        <div class="content">
+                            <span class="icon">
+                                <i class="fa-regular fa-window-maximize"></i>
+                            </span>
+                            <h3 class="title">Aghamenon Toberlock</h3>
+                            <h3 class="title">21/05/2024</h3>
+                            <p class="description">O Aghamenon Toberlock Estudos é uma plataforma criada por mim, visando transformar a experiência de estudo e preparação para exames, por meio de simulados interativos, relatórios detalhados e ferramentas motivacionais, utilizando tecnologias modernas como HTML, CSS, JavaScript e Firebase.</p>
+                            <a href="https://meliodasbr-oficial.github.io/Richard-Aghamenon-Portfolio/Aghamenon-Toberlock-Estudos" class="learn-more">Saber Mais</a>
+                        </div>
+                        <span class="circle-before"></span>
+                    </div>
+                </div>
+                <div data-aos="zoom-in">
+                    <div class="single-projetos">
+                        <div class="content">
+                            <span class="icon">
+                                <i class="fa-regular fa-window-maximize"></i>
+                            </span>
+                            <h3 class="title">Calculadora de Faltas</h3>
+                            <h3 class="title">11/07/2024</h3>
+                            <p class="description">A Calculadora de Faltas, criada por mim, permite calcular e acompanhar o total de ausências com precisão, exibindo os resultados de forma clara, como "Total de Faltas: 00:50:00 = 1". Além disso, ela oferece a opção de zerar as faltas e limpar as cargas horárias com facilidade, auxiliando na organização acadêmica.</p>
+                            <a href="https://meliodasbr-oficial.github.io/Richard-Aghamenon-Portfolio/Calculadora-de-Faltas" class="learn-more">Saber Mais</a>
+                        </div>
+                        <span class="circle-before"></span>
+                    </div>
+                </div>
+                <div data-aos="zoom-in">
+                    <div class="single-projetos">
+                        <div class="content">
+                            <span class="icon">
+                                <i class="fa-regular fa-window-maximize"></i>
+                            </span>
+                            <h3 class="title">Biblioteca Escolar – E.E. Professor Souza Nilo</h3>
+                            <h3 class="title">06/08/2025</h3>
+                            <p class="description">A Biblioteca Souza Nilo é um sistema web desenvolvido com foco na organização e modernização da biblioteca. Conta com uma área pública para consulta de livros e um painel administrativo exclusivo para o bibliotecário, permitindo o controle de livros, leitores e empréstimos.</p>
+                            <a href="https://meliodasbr-oficial.github.io/Richard-Aghamenon-Portfolio/Biblioteca-Souza-Nilo" class="learn-more">Saber Mais</a>
+                        </div>
+                        <span class="circle-before"></span>
+                    </div>
+                </div>
+            </div>
+    </section>
+
+    <section class="contato" id="contato">
+        <div data-aos="zoom-in-up">
+            <div class="container">
+                <div class="row">
+                    <div class="contato-left">
+                        <h1 class="sub-title">Contato</h1>
+                        <a href="mailto:richardaghamenondemoura@gmail.com">
+                            <button class="button">
+                                <p><i class="fa-solid fa-paper-plane"></i> Enviar um Email</p>
+                            </button>
+                        </a>                    
+                        <p1><i class="fa-solid fa-phone"></i> WhatsApp: 35 99736-4963</p1>
+                        <div class="social-icon">
+                            <a href="https://github.com/meliodasbr-oficial"><i class="fa-brands fa-github"></i></a>
+                            <a href="https://www.instagram.com/meliodasbr_ofc/"><i class="fa-brands fa-instagram"></i></a>
+                        </div>
+                    </div>
+                    <div class="contact-right">
+                        <form id="contact-form">
+                            <input type="text" id="name" placeholder="Seu Nome" required>
+                            <input type="email" id="email" placeholder="Seu Email" required>
+                            <textarea id="message" rows="4" placeholder="Sua Mensagem" required></textarea>
+                            <button type="submit" class="button">
+                                <p>Enviar</p>
+                            </button>
+                        </form>
+                        <div id="responseMessage" style="display: none;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <footer class="footer">
+        <div data-aos="zoom-in">
+            <div class="social">
+                <a href="https://github.com/meliodasbr-oficial"><i class="fa-brands fa-github"></i></a>
+                <a href="https://www.instagram.com/meliodasbr_ofc/"><i class="fa-brands fa-instagram"></i></a>
+            </div>
+            <p class="copyright">
+                &copy; 2024 Richard Aghamenon. Todos os direitos reservados.
+            </p>
+        </div>
+    </footer>
+    <script src="script.js"></script>
+    <script src="messagem.js"></script>
+    <script>
+        AOS.init();
+      </script>
+      <div id="toast-container"></div>
+
 </body>
 </html>
