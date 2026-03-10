@@ -7,32 +7,33 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <title>Central Bibliotecário</title>
   <link rel="stylesheet" href="painel.css" />
-  <script type="module" src="console-block.js"></script>
 </head>
 <body class="painel-bg">
-<aside class="sidebar">
-  <div class="sidebar-header">
-    <img src="souzanilologo.png" alt="Logo Escola" class="logo-escola" draggable="false">
-    <h1>Central Bibliotecário(a)</h1>
-  </div>
-  <nav class="sidebar-nav">
-    <div class="card" id="card-registrar">📚 Catalogar Livro</div>
-    <div class="card" id="card-leitores">👥 Registrar Leitor</div>
-    <div class="card" id="card-emprestimo">📑 Registrar Empréstimo</div>
-    <div class="card" id="card-criar">📂 Criar Gênero</div>
-    <div class="card" id="card-livros">📖 Livros Catalogados</div>
-    <div class="card" id="card-lista-leitores">📋 Lista de Leitores</div>
-    <div class="card" id="card-lista-emprestimos">📂 Lista de Empréstimos</div>
-    <div class="card" id="card-notificacoes">🔔 Notificações</div>
-  </nav>
-  <button id="logoutBtn" class="logout-btn">Sair</button>
-</aside>
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <img src="souzanilologo.png" alt="Logo Escola" class="logo-escola" draggable="false">
+      <h1>Central Bibliotecário(a)</h1>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="card" id="card-registrar">📚 Catalogar Livro</div>
+      <div class="card" id="card-leitores">👥 Registrar Leitor</div>
+      <div class="card" id="card-emprestimo">📑 Registrar Empréstimo</div>
+      <div class="card" id="card-criar">📂 Criar Gênero</div>
+      <div class="card" id="card-livros">📖 Livros Catalogados</div>
+      <div class="card" id="card-lista-leitores">📋 Lista de Leitores</div>
+      <div class="card" id="card-lista-emprestimos">📂 Lista de Empréstimos</div>
+      <div class="card" id="card-notificacoes">🔔 Notificações</div>
+    </nav>
+
+    <button id="logoutBtn" class="logout-btn">Sair</button>
+  </aside>
 
   <section class="lista-section" id="secao-livros-registrados" style="display: none;">
     <div class="livros-card">
       <h2>Livros Catalogados</h2>
       <div class="livros-topo">
-        <input type="text" placeholder="Pesquisar livros..." class="livros-pesquisa" id="livros-pesquisa" />
+        <input type="text" placeholder="Pesquisar livros..." class="livros-pesquisa" id="livros-pesquisa" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
       </div>
       <div class="livros-lista" id="lista-livros-registrados">
         <p class="sem-livros">Nenhum livro registrado.</p>
@@ -43,33 +44,25 @@
   <section class="livros-section" id="secao-registrar-livro" style="display: none;">
     <div class="livros-card">
       <h2>Catalogar Livro</h2>
-      <form id="form-registrar-livro">
+      <form id="form-registrar-livro" autocomplete="off">
         <label>Nome:<br />
-          <input type="text" id="nomeLivro" required placeholder="Nome do Livro" />
+          <input type="text" id="nomeLivro" required placeholder="Nome do Livro" autocomplete="off" />
         </label>
 
         <label>Autor:<br />
-          <input type="text" id="autorLivro" required placeholder="Nome do Autor" />
+          <input type="text" id="autorLivro" required placeholder="Nome do Autor" autocomplete="off" />
         </label>
 
         <label>Gênero: <span style="color:#ff4444">*</span><br />
           <input type="text" id="generoLivro" readonly placeholder="Clique para selecionar o gênero" required />
         </label>
 
-        <div id="modalGenero" style="display:none;">
-          <div class="modal-conteudo">
-            <button id="fecharModalGenero" aria-label="Fechar">&times;</button>
-            <h3>Selecione um gênero</h3>
-            <ul id="listaGenerosModal"></ul>
-          </div>
-        </div>
-
         <label>Número da Prateleira:<br />
-          <input type="text" id="prateleiraLivro" placeholder="Local onde o livro está" />
+          <input type="text" id="prateleiraLivro" placeholder="Local onde o livro está" autocomplete="off" />
         </label>
 
         <label>Volume (opcional):<br />
-          <input type="text" id="volumeLivro" placeholder="Deixe vazio se não houver" />
+          <input type="text" id="volumeLivro" placeholder="Deixe vazio se não houver" autocomplete="off" />
         </label>
 
         <label>Quantidade:<br />
@@ -86,9 +79,9 @@
   <section class="livros-section" id="secao-criar-genero" style="display: none;">
     <div class="livros-card">
       <h2>Criar Novo Gênero</h2>
-      <form id="form-criar-genero">
+      <form id="form-criar-genero" autocomplete="off">
         <label for="inputNovoGenero">Novo Gênero:</label><br />
-        <input type="text" id="inputNovoGenero" placeholder="Digite o nome do gênero" required />
+        <input type="text" id="inputNovoGenero" placeholder="Digite o nome do gênero" required autocomplete="off" />
         <div style="margin-top: 10px; display: flex; gap: 10px;">
           <button type="submit">Adicionar</button>
         </div>
@@ -97,19 +90,20 @@
       <hr style="margin: 20px 0;" />
 
       <h3>Gêneros Cadastrados</h3>
-<div class="generos-card">
-  <ul id="lista-generos">
-    <li class="sem-livros">Nenhum gênero registrado.</li>
-  </ul>
-</div>
+      <div class="generos-card">
+        <ul id="lista-generos">
+          <li class="sem-livros">Nenhum gênero registrado.</li>
+        </ul>
+      </div>
     </div>
   </section>
 
   <section class="livros-section" id="secao-registrar-leitor" style="display: none;">
     <div class="livros-card">
       <h2>Registrar Leitor</h2>
-      <form id="form-registrar-leitor">
-        <label>Nome Completo:<br><input type="text" id="nomeLeitor" required placeholder="Nome do Leitor"></label>
+      <form id="form-registrar-leitor" autocomplete="off">
+        <label>Nome Completo:<br><input type="text" id="nomeLeitor" required placeholder="Nome do Leitor" autocomplete="off"></label>
+
         <label>Turno:<br>
           <select id="turnoLeitor" required>
             <option value="">Selecione...</option>
@@ -118,8 +112,10 @@
             <option value="Noite">Noite</option>
           </select>
         </label>
+
         <label>Turma:<br><select id="turmaLeitor" required></select></label>
         <label>Data de Nascimento:<br><input type="date" id="nascimentoLeitor" required></label>
+
         <div class="botoes-form">
           <button type="submit">Registrar</button>
           <button type="button" class="btn-cancelar">Cancelar</button>
@@ -128,87 +124,101 @@
     </div>
   </section>
 
-<section class="livros-section" id="secao-registrar-emprestimo" style="display:none;">
-  <div class="livros-card">
-    <h2>Registrar Empréstimo</h2>
-    <form id="form-registrar-emprestimo">
-      <label>Turno:<br>
-        <select id="turnoEmprestimo" required>
-          <option value="">Selecione...</option>
-          <option value="Manhã">Manhã</option>
-          <option value="Tarde">Tarde</option>
-          <option value="Noite">Noite</option>
-        </select>
-      </label>
-      <label>Turma:<br><select id="turmaEmprestimo" required></select></label>
-      <label>Nome Completo:<br>
-        <input type="text" id="nomeEmprestimo" readonly placeholder="Clique para selecionar">
-      </label>
-      <label>Livro:<br>
-        <input type="text" id="livroEmprestimo" readonly placeholder="Clique para selecionar">
-      </label>
-      <label>Dias para entrega (máx 30):<br>
-        <input type="number" id="diasEntrega" min="1" max="30" required>
-      </label>
-      <div class="botoes-form">
-        <button type="submit">Registrar</button>
-      </div>
-    </form>
-  </div>
-</section>
+  <section class="livros-section" id="secao-registrar-emprestimo" style="display:none;">
+    <div class="livros-card">
+      <h2>Registrar Empréstimo</h2>
+      <form id="form-registrar-emprestimo" autocomplete="off">
+        <label>Turno:<br>
+          <select id="turnoEmprestimo" required>
+            <option value="">Selecione...</option>
+            <option value="Manhã">Manhã</option>
+            <option value="Tarde">Tarde</option>
+            <option value="Noite">Noite</option>
+          </select>
+        </label>
+
+        <label>Turma:<br><select id="turmaEmprestimo" required></select></label>
+
+        <label>Nome Completo:<br>
+          <input type="text" id="nomeEmprestimo" readonly placeholder="Clique para selecionar">
+        </label>
+
+        <label>Livro:<br>
+          <input type="text" id="livroEmprestimo" readonly placeholder="Clique para selecionar">
+        </label>
+
+        <label>Dias para entrega (máx 30):<br>
+          <input type="number" id="diasEntrega" min="1" max="30" required>
+        </label>
+
+        <div class="botoes-form">
+          <button type="submit">Registrar</button>
+        </div>
+      </form>
+    </div>
+  </section>
 
   <section class="lista-section" id="secao-lista-leitores" style="display:none;">
     <div class="livros-card">
       <h2>Lista de Leitores</h2>
+
       <div class="leitores-topo">
-        <label>Pesquisar Leitor:<input type="text" placeholder="Pesquisar Leitores..." class="leitores-pesquisa" /></label>
+        <label>Pesquisar Leitor:
+          <input type="text" placeholder="Pesquisar Leitores..." class="leitores-pesquisa" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+        </label>
+
         <label>Turno:
-            <select id="turnoLeitor" required>
-              <option value="">Selecione...</option>
-              <option value="Manhã">Manhã</option>
-              <option value="Tarde">Tarde</option>
-              <option value="Noite">Noite</option>
-            </select>
-          </label>
-          <label>Turma:
-            <select id="turmaLeitor" required></select>
-          </label>
-          <div style="margin-bottom:10px; display:flex; gap:10px;">
-  <button class="btn-warning" onclick="virarAnoLetivo()">🔄 Virar Ano Letivo</button>
-  <button class="btn-info" onclick="gerarRelatorioPDF()">📄 Gerar PDF</button>
-  <button class="btn-danger" onclick="restaurarUltimoBackup()">♻️ Restaurar Backup</button>
-</div>
+          <select id="turnoLeitorFiltro" required>
+            <option value="">Selecione...</option>
+            <option value="Manhã">Manhã</option>
+            <option value="Tarde">Tarde</option>
+            <option value="Noite">Noite</option>
+          </select>
+        </label>
+
+        <label>Turma:
+          <select id="turmaLeitorFiltro" required></select>
+        </label>
+
+        <div style="margin-bottom:10px; display:flex; gap:10px; flex-wrap:wrap;">
+          <button class="btn-warning" onclick="dialogSenhaAno.showModal()">🔄 Virar Ano Letivo</button>
+          <button class="btn-info" onclick="gerarRelatorioPDF()">📄 Gerar PDF</button>
+          <button class="btn-danger" onclick="restaurarUltimoBackup()">♻️ Restaurar Backup</button>
         </div>
-      <div id="lista-leitores" id="lista-leitores-registrados">
+      </div>
+
+      <div id="lista-leitores">
         <p class="sem-leitores">Nenhum leitor registrado.</p>
       </div>
     </div>
   </section>
 
-<section class="lista-section" id="secao-lista-emprestimos" style="display:none;">
-  <div class="livros-card">
-    <h2>Lista de Empréstimos</h2>
+  <section class="lista-section" id="secao-lista-emprestimos" style="display:none;">
+    <div class="livros-card">
+      <h2>Lista de Empréstimos</h2>
 
-    <div class="emprestimos-topo">
-      <label>Pesquisar Leitor:<input type="text" id="pesquisaEmprestimos" placeholder="Pesquisar..." /></label>
-      <label>Turno:
-        <select id="turnoEmprestimoFiltro">
-          <option value="">Todos</option>
-          <option value="Manhã">Manhã</option>
-          <option value="Tarde">Tarde</option>
-          <option value="Noite">Noite</option>
-        </select>
-      </label>
-      <label>Turma:
-        <select id="turmaEmprestimoFiltro">
-          <option value="">Todos</option>
-        </select>
-      </label>
+      <div class="emprestimos-topo">
+        <label>Pesquisar Leitor:<input type="text" id="pesquisaEmprestimos" placeholder="Pesquisar..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" /></label>
+
+        <label>Turno:
+          <select id="turnoEmprestimoFiltro">
+            <option value="">Todos</option>
+            <option value="Manhã">Manhã</option>
+            <option value="Tarde">Tarde</option>
+            <option value="Noite">Noite</option>
+          </select>
+        </label>
+
+        <label>Turma:
+          <select id="turmaEmprestimoFiltro">
+            <option value="">Todos</option>
+          </select>
+        </label>
+      </div>
+
+      <div id="lista-emprestimos"></div>
     </div>
-
-    <div id="lista-emprestimos"></div>
-  </div>
-</section>
+  </section>
 
   <section class="lista-section" id="secao-notificacoes" style="display:none;">
     <div class="livros-card">
@@ -217,87 +227,129 @@
     </div>
   </section>
 
-<dialog id="dialogSelecionar">
-  <div class="dialog-header">
-    <h3 id="dialogTitulo">Selecionar Item</h3>
-    <button id="btnFecharDialog" class="btn btn-danger">Fechar</button>
-  </div>
-  <div class="dialog-search">
-    <input type="text" id="pesquisaDialog" placeholder="Pesquisar..." />
-    <span id="statusDialog" style="font-size:14px;opacity:.8;"></span>
-  </div>
-  <ul id="listaDialog" class="dialog-lista"></ul>
-</dialog>
+  <dialog id="dialogSelecionar">
+    <div class="dialog-header">
+      <h3 id="dialogTitulo">Selecionar Item</h3>
+      <button id="btnFecharDialog" class="btn btn-danger">Fechar</button>
+    </div>
+
+    <div class="dialog-search">
+      <input type="text" id="pesquisaDialog" placeholder="Pesquisar..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+      <span id="statusDialog" style="font-size:14px;opacity:.8;"></span>
+    </div>
+
+    <ul id="listaDialog" class="dialog-lista"></ul>
+  </dialog>
 
   <dialog id="dialogoConfirmacao">
-  <p id="dialogoMensagem"></p>
-  <div class="dialogoBotoes">
-    <button id="btnSimDialog">Sim</button>
-    <button id="btnCancelarDialog">Cancelar</button>
-  </div>
-</dialog>
+    <p id="dialogoMensagem"></p>
+    <div class="dialogoBotoes">
+      <button id="btnSimDialog">Sim</button>
+      <button id="btnCancelarDialog">Cancelar</button>
+    </div>
+  </dialog>
 
-<!--Editar-->
-<dialog id="dialogEditarLivro">
-  <div class="dialog-header">
-    <h3>Editar Livro</h3>
-    <button id="btnFecharEditarLivro" class="btn btn-danger" aria-label="Fechar">&times;</button>
-  </div>
+  <dialog id="dialogEditarLivro">
+    <div class="dialog-header">
+      <h3>Editar Livro</h3>
+      <button id="btnFecharEditarLivro" class="btn btn-danger" aria-label="Fechar">&times;</button>
+    </div>
 
-  <form id="form-editar-livro">
-    <label>Nome do Livro:<br>
-      <input type="text" id="editarNomeLivro" required placeholder="Nome do Livro">
-    </label>
+    <form id="form-editar-livro" autocomplete="off">
+      <label>Nome do Livro:<br>
+        <input type="text" id="editarNomeLivro" required placeholder="Nome do Livro" autocomplete="off">
+      </label>
 
-    <label>Autor:<br>
-      <input type="text" id="editarAutorLivro" required placeholder="Nome do Autor">
-    </label>
+      <label>Autor:<br>
+        <input type="text" id="editarAutorLivro" required placeholder="Nome do Autor" autocomplete="off">
+      </label>
 
-    <label>Gênero:<br>
-      <input type="text" id="editarGeneroLivro" readonly placeholder="Clique para selecionar o gênero" required>
-    </label>
+      <label>Gênero:<br>
+        <input type="text" id="editarGeneroLivro" readonly placeholder="Clique para selecionar o gênero" required>
+      </label>
 
-    <div id="modalEditarGenero" style="display:none;">
-      <div class="modal-conteudo">
-        <button id="fecharModalEditarGenero" aria-label="Fechar">&times;</button>
-        <h3>Selecione um gênero</h3>
-        <ul id="listaGenerosEditarModal"></ul>
+      <label>Volume:<br>
+        <input type="text" id="editarVolumeLivro" placeholder="Volume / Edição" value="1" autocomplete="off">
+      </label>
+
+      <label>Quantidade:<br>
+        <input type="number" id="editarQuantidadeLivro" required min="1" value="1">
+      </label>
+
+      <label>Número da Prateleira:<br>
+        <input type="text" id="editarPrateleiraLivro" placeholder="Local onde o livro está" autocomplete="off">
+      </label>
+
+      <div style="margin-top: 20px; display: flex; gap: 10px;">
+        <button type="submit">Salvar Edição</button>
+        <button type="button" id="btnCancelarEditarLivro" class="btn-cancelar">Cancelar</button>
       </div>
+    </form>
+  </dialog>
+
+  <dialog id="dialogSenhaAno">
+    <h3>Confirmar Virada de Ano</h3>
+    <input type="password" id="senhaAno" placeholder="Digite a senha" autocomplete="new-password" />
+    <label>
+      <input type="checkbox" id="mostrarSenha"> Mostrar senha
+    </label>
+    <br><br>
+    <button id="confirmarAno">OK</button>
+    <button type="button" onclick="dialogSenhaAno.close()">Cancelar</button>
+  </dialog>
+
+  <dialog id="dialogAdicionarDias">
+    <div class="dialog-header">
+      <h3>Renovação do Dia de Entrega</h3>
+      <button id="btnFecharAdicionarDias" class="btn btn-danger" type="button">&times;</button>
     </div>
 
-    <label>Volume:<br>
-    <input type="text" id="editarVolumeLivro" placeholder="Volume / Edição" value="1">
-    </label>
+    <form id="formAdicionarDias" autocomplete="off">
+      <label>Nome:<br>
+        <input type="text" id="addDiasNome" readonly>
+      </label>
 
-    <label>Quantidade:<br>
-      <input type="number" id="editarQuantidadeLivro" required min="1" value="1">
-    </label>
+      <label>Livro:<br>
+        <input type="text" id="addDiasLivro" readonly>
+      </label>
 
-    <label>Número da Prateleira:<br>
-      <input type="text" id="editarPrateleiraLivro" placeholder="Local onde o livro está">
-    </label>
+      <label>Autor:<br>
+        <input type="text" id="addDiasAutor" readonly>
+      </label>
 
-    <div style="margin-top: 20px; display: flex; gap: 10px;">
-      <button type="submit">Salvar Edição</button>
-      <button type="button" id="btnCancelarEditarLivro" class="btn-cancelar">Cancelar</button>
-    </div>
-  </form>
-</dialog>
+      <label>Gênero:<br>
+        <input type="text" id="addDiasGenero" readonly>
+      </label>
+
+      <label>Volume:<br>
+        <input type="text" id="addDiasVolume" readonly>
+      </label>
+
+      <label>Prateleira:<br>
+        <input type="text" id="addDiasPrateleira" readonly>
+      </label>
+
+      <label>Dia de Entrega:<br>
+        <input type="text" id="addDiasEntregaAtual" readonly>
+      </label>
+
+      <label>Adicionar Dias:<br>
+        <input type="number" id="addDiasQuantidade" min="1" max="30" required placeholder="Digite quantos dias deseja adicionar">
+      </label>
+
+      <label>Nova Entrega:<br>
+        <input type="text" id="addDiasNovaEntrega" readonly>
+      </label>
+
+      <div style="margin-top: 20px; display: flex; gap: 10px;">
+        <button type="submit">Atualizar</button>
+        <button type="button" id="btnCancelarAdicionarDias" class="btn-cancelar">Cancelar</button>
+      </div>
+    </form>
+  </dialog>
 
   <div id="toast-container" class="toast-container"></div>
+
   <script type="module" src="painel.js"></script>
 </body>
-
-<!--Dialog fianl de ano-->
-<dialog id="dialogSenhaAno">
-  <h3>Confirmar Virada de Ano</h3>
-  <input type="password" id="senhaAno" placeholder="Digite a senha" />
-  <label>
-    <input type="checkbox" id="mostrarSenha"> Mostrar senha
-  </label>
-  <br><br>
-  <button id="confirmarAno">OK</button>
-  <button onclick="dialogSenhaAno.close()">Cancelar</button>
-</dialog>
-
 </html>

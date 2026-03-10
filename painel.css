@@ -21,6 +21,13 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 250px;
+  height: 100vh;
+  z-index: 2;
+  overflow-y: auto;
 }
 
 .sidebar-header {
@@ -71,6 +78,13 @@ body {
   transform: scale(1.05);
 }
 
+.card.ativo {
+  background: yellow;
+  color: black;
+  font-weight: bold;
+  border-radius: 6px;
+}
+
 .logout-btn {
   margin-top: 20px;
   padding: 10px 14px;
@@ -99,15 +113,33 @@ body {
   gap: 20px;
 }
 
-html::-webkit-scrollbar {
+html::-webkit-scrollbar,
+.dialog-lista::-webkit-scrollbar,
+.generos-card::-webkit-scrollbar,
+#lista-leitores::-webkit-scrollbar,
+#lista-emprestimos::-webkit-scrollbar,
+#lista-notificacoes::-webkit-scrollbar,
+.livros-lista::-webkit-scrollbar {
   width: 10px;
 }
 
-html::-webkit-scrollbar-track {
+html::-webkit-scrollbar-track,
+.dialog-lista::-webkit-scrollbar-track,
+.generos-card::-webkit-scrollbar-track,
+#lista-leitores::-webkit-scrollbar-track,
+#lista-emprestimos::-webkit-scrollbar-track,
+#lista-notificacoes::-webkit-scrollbar-track,
+.livros-lista::-webkit-scrollbar-track {
   background: rgba(0,0,0,0.3);
 }
 
-html::-webkit-scrollbar-thumb {
+html::-webkit-scrollbar-thumb,
+.dialog-lista::-webkit-scrollbar-thumb,
+.generos-card::-webkit-scrollbar-thumb,
+#lista-leitores::-webkit-scrollbar-thumb,
+#lista-emprestimos::-webkit-scrollbar-thumb,
+#lista-notificacoes::-webkit-scrollbar-thumb,
+.livros-lista::-webkit-scrollbar-thumb {
   background-color: #ff4444;
   border-radius: 10px;
 }
@@ -132,6 +164,16 @@ html {
   }
 }
 
+.livros-section,
+.lista-section {
+  margin-left: 240px;
+  padding: 30px;
+  display: flex;
+  justify-content: center;
+  flex: 1;
+  background: transparent;
+}
+
 .livros-card {
   background-color: rgb(32 32 32 / 20%);
   border: 1px solid rgba(255, 255, 255, 0.2);
@@ -147,6 +189,21 @@ html {
   box-shadow: 0 10px 20px rgba(0,0,0,0.5);
 }
 
+.livros-section .livros-card {
+  width: 100%;
+  max-width: 600px;
+}
+
+.lista-section .livros-card {
+  width: 100%;
+  max-width: 1000vh;
+  background-color: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+}
+
 .livros-card h2 {
   margin-bottom: 15px;
   color: #ff4444;
@@ -155,7 +212,9 @@ html {
 .livros-card input[type="text"],
 .livros-card input[type="number"],
 .livros-card input[type="date"],
-.livros-card select {
+.livros-card input[type="password"],
+.livros-card select,
+#dialogSenhaAno input[type="password"] {
   width: 100%;
   padding: 10px 12px;
   margin: 6px 0 15px 0;
@@ -168,8 +227,8 @@ html {
 }
 
 .livros-card select option {
-  background-color: #00173f; /* fundo das opções */
-  color: white;              /* texto das opções */
+  background-color: #00173f;
+  color: white;
 }
 
 .livros-card input[type="date"]::-webkit-calendar-picker-indicator {
@@ -177,18 +236,25 @@ html {
   cursor: pointer;
 }
 
-.livros-card input::placeholder {
+.livros-card input::placeholder,
+#dialogSenhaAno input::placeholder,
+#pesquisaDialog::placeholder {
   color: rgba(255,255,255,0.6);
 }
 
 .livros-card input:focus,
-.livros-card select:focus {
+.livros-card select:focus,
+#dialogSenhaAno input:focus,
+#pesquisaDialog:focus,
+#dialogAdicionarDias input:focus {
   outline: none;
   border: 1px solid #ff4444;
   background-color: rgba(255,255,255,0.15);
 }
 
-.livros-card button {
+.livros-card button,
+#dialogSenhaAno button,
+#dialogAdicionarDias button {
   padding: 10px 18px;
   border: none;
   border-radius: 8px;
@@ -199,7 +265,9 @@ html {
   transition: background 0.3s, transform 0.2s;
 }
 
-.livros-card button:hover {
+.livros-card button:hover,
+#dialogSenhaAno button:hover,
+#dialogAdicionarDias button:hover {
   background-color: #cc0000;
   transform: scale(1.05);
 }
@@ -217,74 +285,6 @@ html {
   display: flex;
   gap: 10px;
   margin-top: 10px;
-}
-
-#modalGenero {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.7);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 100;
-}
-
-.modal-conteudo {
-  background: #00173f;
-  padding: 20px;
-  border-radius: 12px;
-  min-width: 300px;
-  max-width: 400px;
-  box-shadow: 0 6px 12px rgba(0,0,0,0.5);
-  text-align: center;
-}
-
-.modal-conteudo h3 {
-  color: #ff4444;
-  margin-bottom: 15px;
-}
-
-.modal-conteudo ul {
-  list-style: none;
-  max-height: 200px;
-  overflow-y: auto;
-  padding: 0;
-}
-
-.modal-conteudo ul li {
-  padding: 8px 10px;
-  margin-bottom: 5px;
-  border-radius: 6px;
-  background: rgba(255,255,255,0.05);
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.modal-conteudo ul li:hover {
-  background: #ff4444;
-  color: white;
-}
-
-#fecharModalGenero {
-  float: right;
-  border: none;
-  background: none;
-  font-size: 18px;
-  color: white;
-  cursor: pointer;
-}
-
-.livros-section {
-  display: flex;
-  justify-content: center;
-  padding: 30px;
-  flex: 1;
-  background: transparent;
-}
-
-.livros-section .livros-card {
-  width: 100%;
-  max-width: 600px;
 }
 
 .generos-card {
@@ -320,33 +320,13 @@ html {
   color: white;
 }
 
-
-/* SEÇÕES DE LISTA CENTRALIZADAS */
-.lista-section {
-  display: flex;
-  justify-content: center;
-  padding: 30px;
-  flex: 1;
-  background: transparent;
-}
-
-.lista-section .livros-card {
-  width: 100%;
-  max-width: 1000vh;
-  background-color: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.2);
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 6px 12px rgba(0,0,0,0.3);
-}
-
 .lista-section .livros-lista,
 .lista-section .generos-card,
 .lista-section #lista-leitores,
 .lista-section #lista-emprestimos,
 .lista-section #lista-notificacoes {
-  max-height: 600px;       /* altura máxima antes do scroll */
-  overflow-y: auto;        /* scroll interno */
+  max-height: 600px;
+  overflow-y: auto;
   padding: 10px;
   margin-top: 10px;
   border-radius: 10px;
@@ -354,7 +334,6 @@ html {
   border: 1px solid rgba(255,255,255,0.2);
 }
 
-/* ITENS DA LISTA */
 .lista-section .livros-lista p,
 .lista-section .generos-card ul li,
 .lista-section #lista-leitores p,
@@ -376,28 +355,6 @@ html {
   color: white;
 }
 
-.sidebar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 250px;
-  height: 100vh;
-  z-index: 2;
-  background: linear-gradient(to bottom, #005dffab, #930000bf);
-  overflow-y: auto;
-}
-
-.lista-section,
-.livros-section {
-  margin-left: 240px;
-  padding: 30px;
-  display: flex;
-  justify-content: center;
-  flex: 1;
-}
-
-
-/* ================== TOAST ================== */
 .toast-container {
   position: fixed;
   top: 20px;
@@ -409,23 +366,13 @@ html {
   pointer-events: none;
 }
 
-.toast-container {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  z-index: 2000;
-}
-
 .toast {
   background: #222;
   color: #fff;
   padding: 12px 20px;
   border-radius: 12px;
   font-size: 18px;
-  min-width: 220px;
+  min-width: 260px;
   box-shadow: 0 4px 10px rgba(0,0,0,0.3);
   opacity: 0;
   transform: translateX(120%);
@@ -434,6 +381,36 @@ html {
 
 .toast.hide {
   animation: slideOut 0.5s forwards;
+}
+
+.toast .reload-info {
+  font-size: 0.9rem;
+  opacity: 0.9;
+  margin-top: 6px;
+}
+
+.duration-bar {
+  height: 4px;
+  width: 100%;
+  margin-top: 10px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.22);
+  overflow: hidden;
+}
+
+.duration-bar::after {
+  content: "";
+  display: block;
+  height: 100%;
+  width: 100%;
+  background: #ff4444;
+  transform-origin: left;
+  animation: durationBarAnim linear forwards;
+}
+
+@keyframes durationBarAnim {
+  from { transform: scaleX(1); }
+  to { transform: scaleX(0); }
 }
 
 @keyframes slideIn {
@@ -446,9 +423,13 @@ html {
   to   { opacity: 0; transform: translateX(120%); }
 }
 
-#dialogoConfirmacao::backdrop {
+#dialogoConfirmacao::backdrop,
+#dialogSelecionar::backdrop,
+#dialogEditarLivro::backdrop,
+#dialogSenhaAno::backdrop,
+#dialogAdicionarDias::backdrop {
   background: rgba(0,0,0,0.6);
-  backdrop-filter: blur(2px);
+  backdrop-filter: blur(3px);
 }
 
 #dialogoConfirmacao {
@@ -471,43 +452,11 @@ html {
   position: absolute;
   inset: 0;
   border-radius: 20px;
-  background: conic-gradient(
-    from 0deg,
-    navy,
-    red,
-    yellow,
-    white,
-    navy
-  );
+  background: conic-gradient(from 0deg, navy, red, yellow, white, navy);
   animation: spinBg 6s linear infinite;
   z-index: 0;
   filter: blur(20px);
 }
-
-#dialogoConfirmacao::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: 20px;
-  background: rgba(30, 30, 30, 0.85);
-  backdrop-filter: blur(6px);
-  z-index: 0;
-}
-
-#dialogoConfirmacao * {
-  position: relative;
-  z-index: 1;
-}
-
-@keyframes spinBg {
-  100% { transform: rotate(360deg); }
-}
-
-@keyframes dialogIn {
-  from { opacity: 0; transform: translateY(-40px) scale(0.9); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
-}
-
 
 #dialogoConfirmacao::after {
   content: "";
@@ -523,16 +472,15 @@ html {
   z-index: 1;
 }
 
+@keyframes spinBg {
+  100% { transform: rotate(360deg); }
+}
+
 @keyframes dialogIn {
   from { opacity: 0; transform: translateY(-30px) scale(0.9); }
   to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-@keyframes spinBorder {
-  100% { transform: rotate(360deg); }
-}
-
-/* ================== BOTÕES DIALOG ================== */
 .dialogoBotoes {
   display: flex;
   gap: 10px;
@@ -556,7 +504,6 @@ html {
   transform: scale(1.05);
 }
 
-/* ===== DIALOG ===== */
 dialog#dialogSelecionar {
   position: fixed;
   top: 50%;
@@ -569,15 +516,9 @@ dialog#dialogSelecionar {
   color: #f5f5f5;
   box-shadow: 0 10px 30px rgba(255, 255, 255, 0.5);
   z-index: 9999;
-
-  /* Animação de entrada */
   opacity: 0;
   animation: dialogEnter 0.4s ease-out forwards;
-}
-
-dialog#dialogSelecionar::backdrop {
-  background: rgba(0,0,0,0.6);
-  backdrop-filter: blur(3px);
+  border: none;
 }
 
 @keyframes dialogEnter {
@@ -596,6 +537,7 @@ dialog#dialogSelecionar::backdrop {
   align-items: center;
   justify-content: space-between;
   margin-bottom: 12px;
+  gap: 12px;
 }
 
 .dialog-header h3 {
@@ -607,6 +549,8 @@ dialog#dialogSelecionar::backdrop {
 .dialog-search {
   display: flex;
   margin-bottom: 12px;
+  align-items: center;
+  gap: 10px;
 }
 
 #pesquisaDialog {
@@ -617,10 +561,6 @@ dialog#dialogSelecionar::backdrop {
   font-size: 16px;
   background-color: #00000099;
   color: #f5f5f5;
-}
-
-#pesquisaDialog::placeholder {
-  color: #aaa;
 }
 
 .dialog-lista {
@@ -640,10 +580,13 @@ dialog#dialogSelecionar::backdrop {
   padding: 12px;
   margin-bottom: 8px;
   flex-wrap: wrap;
+  gap: 10px;
   background-color: #00000095;
 }
 
-.dialog-item:last-child { margin-bottom: 0; }
+.dialog-item:last-child {
+  margin-bottom: 0;
+}
 
 .dialog-item-info {
   display: flex;
@@ -662,7 +605,6 @@ dialog#dialogSelecionar::backdrop {
   margin-top: 2px;
 }
 
-/* ===== BOTOES ===== */
 .btn-selecionar {
   background: #6b3bdc;
   color: white;
@@ -681,20 +623,18 @@ dialog#dialogSelecionar::backdrop {
   cursor: pointer;
 }
 
+.btn-warning {
+  background: #ff9800 !important;
+  color: #fff !important;
+}
+
+.btn-info {
+  background: #2196f3 !important;
+  color: #fff !important;
+}
+
 .livros-card th {
   background-color: rgb(0 0 0 / 50%);
-}
-
-.card.ativo {
-  background: yellow;
-  color: black;
-  font-weight: bold;
-  border-radius: 6px;
-}
-
-/* Estilo do diálogo */
-#dialogEditarLivro::backdrop {
-  background: rgba(0, 0, 0, 0.5); /* sombra escura atrás do dialog */
 }
 
 #dialogEditarLivro {
@@ -707,16 +647,12 @@ dialog#dialogSelecionar::backdrop {
   color: #fff;
   box-shadow: 0 10px 30px rgba(0,0,0,0.6);
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-
-  /* Centralização */
-  position: fixed;   /* importante */
+  position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
 }
 
-
-/* Header */
 #dialogEditarLivro .dialog-header {
   display: flex;
   justify-content: space-between;
@@ -729,7 +665,6 @@ dialog#dialogSelecionar::backdrop {
   font-size: 1.5rem;
 }
 
-/* Botão de fechar */
 #dialogEditarLivro .btn-danger {
   background: transparent;
   border: none;
@@ -743,7 +678,6 @@ dialog#dialogSelecionar::backdrop {
   color: #ffcccc;
 }
 
-/* Form inputs */
 #dialogEditarLivro input[type="text"],
 #dialogEditarLivro input[type="number"] {
   width: 100%;
@@ -761,7 +695,6 @@ dialog#dialogSelecionar::backdrop {
   color: rgba(255,255,255,0.7);
 }
 
-/* Botões do formulário */
 #dialogEditarLivro button[type="submit"],
 #dialogEditarLivro .btn-cancelar {
   padding: 10px 15px;
@@ -791,33 +724,10 @@ dialog#dialogSelecionar::backdrop {
   background-color: #666;
 }
 
-/* Layout do form */
 #form-editar-livro {
   display: flex;
   flex-direction: column;
   gap: 15px;
-}
-
-/* Modal interno do gênero */
-#modalEditarGenero {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: linear-gradient(to bottom right, #00173f, #b00000);
-  color: #fff;
-  padding: 20px;
-  border-radius: 12px;
-  z-index: 1000;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-}
-
-#modalEditarGenero button {
-  background: transparent;
-  border: none;
-  color: #fff;
-  font-size: 1.2rem;
-  cursor: pointer;
 }
 
 .btn-virar-ano {
@@ -834,7 +744,6 @@ dialog#dialogSelecionar::backdrop {
   background: #e68900;
 }
 
-/* MODAL */
 .modal-ano {
   position: fixed;
   inset: 0;
@@ -866,8 +775,69 @@ dialog#dialogSelecionar::backdrop {
   margin-top: 8px;
 }
 
-.toast .reload-info {
-  font-size: 0.85rem;
-  opacity: 0.8;
-  margin-top: 4px;
+#dialogSenhaAno {
+  border: none;
+  border-radius: 16px;
+  padding: 22px;
+  width: min(420px, 92vw);
+  background: linear-gradient(to bottom right, #00173f, #b00000);
+  color: #fff;
+}
+
+#dialogSenhaAno label {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.leitores-topo,
+.emprestimos-topo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: end;
+  margin-bottom: 12px;
+}
+
+.leitores-topo label,
+.emprestimos-topo label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 180px;
+}
+
+#dialogAdicionarDias {
+  border: none;
+  border-radius: 16px;
+  padding: 20px;
+  width: min(520px, 92vw);
+  background: linear-gradient(to bottom right, #00173f, #b00000);
+  color: #fff;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+#dialogAdicionarDias form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+#dialogAdicionarDias input[type="text"],
+#dialogAdicionarDias input[type="number"] {
+  width: 100%;
+  padding: 10px 12px;
+  margin-top: 5px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.25);
+  background: rgba(255,255,255,0.12);
+  color: white;
+}
+
+#dialogAdicionarDias input[readonly] {
+  opacity: 0.95;
 }

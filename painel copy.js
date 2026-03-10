@@ -1,9 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
 import {
-  initializeFirestore,
-  persistentLocalCache,
-  persistentMultipleTabManager,
+  getFirestore,
   collection,
   addDoc,
   getDocs,
@@ -29,11 +27,7 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-const db = initializeFirestore(app, {
-  localCache: persistentLocalCache({
-    tabManager: persistentMultipleTabManager()
-  })
-});
+const db = getFirestore(app);
 
 let cacheLeitores = [];
 let cacheLivros = [];
@@ -42,11 +36,6 @@ let dialogCallback = null;
 let callbackConfirmacao = null;
 let generosCadastrados = [];
 let emprestimoEditandoDias = null;
-
-let generosCarregados = false;
-let livrosCarregados = false;
-let leitoresCarregados = false;
-let emprestimosCarregados = false;
 
 const turmasPorTurno = {
   "Manhã": [
@@ -261,31 +250,7 @@ function mostrarSecao(idSecao) {
   });
 
   const alvo = document.getElementById(idSecao);
-  if (alvo) elStyleDisplayFlex(alvo);
-}
-
-function elStyleDisplayFlex(el) {
-  el.style.display = "flex";
-}
-
-async function garantirGeneros() {
-  if (generosCarregados) return;
-  await carregarGeneros();
-}
-
-async function garantirLivros() {
-  if (livrosCarregados) return;
-  await carregarLivros(true);
-}
-
-async function garantirLeitores() {
-  if (leitoresCarregados) return;
-  await carregarLeitores(true);
-}
-
-async function garantirEmprestimos() {
-  if (emprestimosCarregados) return;
-  await carregarEmprestimos(true);
+  if (alvo) alvo.style.display = "flex";
 }
 
 Object.keys(botoes).forEach((cardId) => {
@@ -296,20 +261,11 @@ Object.keys(botoes).forEach((cardId) => {
     document.querySelectorAll(".card").forEach((c) => c.classList.remove("ativo"));
     el.classList.add("ativo");
 
-    if (cardId === "card-criar") await garantirGeneros();
-    if (cardId === "card-livros") await garantirLivros();
-    if (cardId === "card-lista-leitores") await garantirLeitores();
-    if (cardId === "card-lista-emprestimos") await garantirEmprestimos();
-    if (cardId === "card-notificacoes") {
-      await garantirEmprestimos();
-      await carregarNotificacoes();
-    }
-    if (cardId === "card-registrar-livro") await garantirGeneros();
-    if (cardId === "card-emprestimo") {
-      await garantirLeitores();
-      await garantirLivros();
-      await garantirEmprestimos();
-    }
+    if (cardId === "card-criar") await carregarGeneros();
+    if (cardId === "card-livros") await carregarLivros();
+    if (cardId === "card-lista-leitores") await carregarLeitores();
+    if (cardId === "card-lista-emprestimos") await carregarEmprestimos();
+    if (cardId === "card-notificacoes") await carregarNotificacoes();
   });
 });
 
@@ -396,8 +352,7 @@ function abrirDialogoGenero(inputDestino, titulo = "Selecionar Gênero") {
   });
 }
 
-inputGeneroLivro.addEventListener("click", async () => {
-  await garantirGeneros();
+inputGeneroLivro.addEventListener("click", () => {
   abrirDialogoGenero(inputGeneroLivro, "Selecionar Gênero");
 });
 
@@ -407,8 +362,6 @@ async function carregarGeneros() {
   generosCadastrados = generos
     .map((g) => g.nome)
     .sort((a, b) => a.localeCompare(b, "pt", { sensitivity: "base" }));
-
-  generosCarregados = true;
 
   const container = document.getElementById("lista-generos");
   container.innerHTML = "";
@@ -436,6 +389,10 @@ async function carregarGeneros() {
         `Deseja excluir o gênero "${nome}"? Isso removerá todos os livros associados.`,
         async () => {
           try {
+            const generoRef = collection(db, nome);
+            const livrosDoGenero = await getDocs(generoRef);
+            await Promise.all(livrosDoGenero.docs.map((d) => deleteDoc(d.ref)));
+
             const qLivros = query(collection(db, "livros"), where("genero", "==", nome));
             const snapLivros = await getDocs(qLivros);
             await Promise.all(snapLivros.docs.map((d) => deleteDoc(d.ref)));
@@ -444,16 +401,9 @@ async function carregarGeneros() {
             const gDoc = gSnap.docs.find((dd) => dd.data().nome === nome);
             if (gDoc) await deleteDoc(gDoc.ref);
 
-            generosCadastrados = generosCadastrados.filter((g) => g !== nome);
-            cacheLivros = cacheLivros.filter((l) => l.genero !== nome);
-
-            const listaGeneros = document.getElementById("lista-generos");
-            if (listaGeneros) await carregarGeneros();
-
-            const secLivros = document.getElementById("secao-livros-registrados");
-            if (secLivros.style.display !== "none") renderLivrosTabela(cacheLivros);
-
-            showToast(`Gênero "${nome}" removido com sucesso!`, "success");
+            showToast(`Gênero "${nome}" removido com sucesso!`, "success", 5000, true);
+            await carregarGeneros();
+            await carregarLivros();
           } catch (err) {
             showToast("Erro ao excluir gênero: " + err.message, "error");
           }
@@ -489,8 +439,6 @@ async function carregarGeneros() {
 document.getElementById("form-criar-genero").addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  await garantirGeneros();
-
   const nome = document.getElementById("inputNovoGenero").value.trim();
 
   if (!nome) return showToast("Informe o nome do gênero.", "warning");
@@ -500,24 +448,21 @@ document.getElementById("form-criar-genero").addEventListener("submit", async (e
 
   try {
     await addDoc(collection(db, "generos"), { nome });
-    generosCadastrados.push(nome);
-    generosCadastrados.sort((a, b) => a.localeCompare(b, "pt", { sensitivity: "base" }));
+    showToast(`Gênero "${nome}" criado com sucesso!`, "success", 5000, true);
     e.target.reset();
     await carregarGeneros();
-    showToast(`Gênero "${nome}" criado com sucesso!`, "success");
   } catch (err) {
     showToast("Erro ao criar gênero: " + err.message, "error");
   }
 });
 
-function livroExiste(nome, autor, volume, ignorarId = null) {
+function livroExiste(nome, autor, volume) {
   const n = normalizarTexto(nome);
   const a = normalizarTexto(autor);
   const v = (volume || "1").trim();
 
   return cacheLivros.some(
     (l) =>
-      l.id !== ignorarId &&
       normalizarTexto(l.nome) === n &&
       normalizarTexto(l.autor) === a &&
       String(l.volume || "1").trim() === v
@@ -532,14 +477,11 @@ async function salvarLivro(livroData) {
     registradoEm: dataHora
   });
 
-  const novoLivro = {
+  cacheLivros.push({
     id: docRef.id,
     ...livroData,
     registradoEm: dataHora
-  };
-
-  cacheLivros.push(novoLivro);
-  return novoLivro;
+  });
 }
 
 function criarTabelaLivros(livros) {
@@ -588,9 +530,24 @@ function criarTabelaLivros(livros) {
         async () => {
           try {
             await deleteDoc(doc(db, "livros", livro.id));
+
+            const generoRef = collection(db, livro.genero);
+            const generoSnap = await getDocs(generoRef);
+
+            const docGenero = generoSnap.docs.find((d) => {
+              const data = d.data();
+              return (
+                data.nome === livro.nome &&
+                data.autor === livro.autor &&
+                (data.volume || "1") === (livro.volume || "1")
+              );
+            });
+
+            if (docGenero) await deleteDoc(docGenero.ref);
+
+            showToast(`Livro "${livro.nome}" removido!`, "success", 5000, true);
             cacheLivros = cacheLivros.filter((l) => l.id !== livro.id);
-            renderLivrosTabela(cacheLivros);
-            showToast(`Livro "${livro.nome}" removido!`, "success");
+            await carregarLivros();
           } catch (err) {
             showToast("Erro ao remover livro: " + err.message, "error");
           }
@@ -637,22 +594,6 @@ function criarTabelaLivros(livros) {
   return tabela;
 }
 
-function renderLivrosTabela(livrosBase = cacheLivros) {
-  const livros = [...livrosBase].sort((a, b) =>
-    a.nome.localeCompare(b.nome, "pt", { sensitivity: "base" })
-  );
-
-  const container = document.getElementById("lista-livros-registrados");
-  container.innerHTML = "";
-
-  if (!livros.length) {
-    container.innerHTML = '<p class="sem-livros">Nenhum livro registrado.</p>';
-    return;
-  }
-
-  container.appendChild(criarTabelaLivros(livros));
-}
-
 function abrirDialogEditarLivro(livro) {
   const dialog = document.getElementById("dialogEditarLivro");
   dialog.showModal();
@@ -667,8 +608,7 @@ function abrirDialogEditarLivro(livro) {
   const form = document.getElementById("form-editar-livro");
   const inputGeneroLivroEditar = document.getElementById("editarGeneroLivro");
 
-  inputGeneroLivroEditar.onclick = async () => {
-    await garantirGeneros();
+  inputGeneroLivroEditar.onclick = () => {
     abrirDialogoGenero(inputGeneroLivroEditar, "Selecionar Gênero");
   };
 
@@ -677,35 +617,35 @@ function abrirDialogEditarLivro(livro) {
     e.preventDefault();
 
     const novoLivro = {
-      nome: document.getElementById("editarNomeLivro").value.trim(),
-      autor: document.getElementById("editarAutorLivro").value.trim(),
-      genero: document.getElementById("editarGeneroLivro").value.trim(),
+      nome: document.getElementById("editarNomeLivro").value,
+      autor: document.getElementById("editarAutorLivro").value,
+      genero: document.getElementById("editarGeneroLivro").value,
       quantidade: document.getElementById("editarQuantidadeLivro").value,
-      prateleira: document.getElementById("editarPrateleiraLivro").value.trim(),
+      prateleira: document.getElementById("editarPrateleiraLivro").value,
       volume: document.getElementById("editarVolumeLivro").value.trim() || "1"
     };
 
-    if (livroExiste(novoLivro.nome, novoLivro.autor, novoLivro.volume, livro.id)) {
-      return showToast(`Livro "${novoLivro.nome}" volume ${novoLivro.volume} já cadastrado.`, "warning");
-    }
-
     try {
-      await setDoc(doc(db, "livros", livro.id), {
-        ...novoLivro,
-        registradoEm: livro.registradoEm || new Date().toISOString()
-      });
+      await setDoc(doc(db, "livros", livro.id), novoLivro);
+
+      const generoRef = collection(db, novoLivro.genero);
+      const q = query(generoRef, where("idLivro", "==", livro.id));
+      const snap = await getDocs(q);
 
       const idx = cacheLivros.findIndex((l) => l.id === livro.id);
-      if (idx !== -1) {
-        cacheLivros[idx] = {
-          ...cacheLivros[idx],
-          ...novoLivro
-        };
+      if (idx !== -1) cacheLivros[idx] = { id: livro.id, ...novoLivro };
+
+      if (!snap.empty) {
+        const docGenero = snap.docs[0];
+        await setDoc(docGenero.ref, {
+          ...novoLivro,
+          idLivro: livro.id
+        });
       }
 
-      renderLivrosTabela(cacheLivros);
       showToast(`Livro "${novoLivro.nome}" atualizado!`, "success");
       dialog.close();
+      await carregarLivros();
     } catch (err) {
       showToast("Erro ao editar livro: " + err.message, "error");
     }
@@ -715,23 +655,29 @@ function abrirDialogEditarLivro(livro) {
   document.getElementById("btnFecharEditarLivro").onclick = () => dialog.close();
 }
 
-async function carregarLivros(forcar = false) {
-  if (!forcar && livrosCarregados) {
-    renderLivrosTabela(cacheLivros);
+async function carregarLivros() {
+  if (!cacheLivros.length) {
+    const snap = await getDocs(collection(db, "livros"));
+    cacheLivros = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+  }
+
+  const livros = [...cacheLivros].sort((a, b) =>
+    a.nome.localeCompare(b.nome, "pt", { sensitivity: "base" })
+  );
+
+  const container = document.getElementById("lista-livros-registrados");
+  container.innerHTML = "";
+
+  if (!livros.length) {
+    container.innerHTML = '<p class="sem-livros">Nenhum livro registrado.</p>';
     return;
   }
 
-  const snap = await getDocs(collection(db, "livros"));
-  cacheLivros = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-  livrosCarregados = true;
-  renderLivrosTabela(cacheLivros);
+  container.appendChild(criarTabelaLivros(livros));
 }
 
 document.getElementById("form-registrar-livro").addEventListener("submit", async (e) => {
   e.preventDefault();
-
-  await garantirGeneros();
-  await garantirLivros();
 
   const nome = document.getElementById("nomeLivro").value.trim();
   const autor = document.getElementById("autorLivro").value.trim();
@@ -754,9 +700,9 @@ document.getElementById("form-registrar-livro").addEventListener("submit", async
 
   try {
     await salvarLivro({ nome, autor, genero, prateleira, volume, quantidade });
-    renderLivrosTabela(cacheLivros);
+    showToast(`"${nome}" (Vol ${volume}) adicionado!`, "success", 5000, true);
     e.target.reset();
-    showToast(`"${nome}" (Vol ${volume}) adicionado!`, "success");
+    await carregarLivros();
   } catch (err) {
     showToast("Erro ao salvar livro: " + err.message, "error");
   }
@@ -767,13 +713,21 @@ if (inputPesquisaLivros) {
   inputPesquisaLivros.addEventListener("input", (e) => {
     const termo = normalizarTexto(e.target.value);
 
-    const livros = cacheLivros.filter((l) =>
+    let livros = cacheLivros.filter((l) =>
       ["nome", "autor", "genero", "prateleira", "volume"].some((c) =>
         normalizarTexto(l[c]).includes(termo)
       )
     );
 
-    renderLivrosTabela(livros);
+    const container = document.getElementById("lista-livros-registrados");
+    container.innerHTML = "";
+
+    if (!livros.length) {
+      container.innerHTML = '<p class="sem-livros">Nenhum livro encontrado.</p>';
+      return;
+    }
+
+    container.appendChild(criarTabelaLivros(livros));
   });
 }
 
@@ -793,10 +747,9 @@ turnoLeitorEl.addEventListener("change", () => {
   preencherTurmasSelect(turmaLeitorEl, turnoLeitorEl.value);
 });
 
-function leitorExiste(nome, turno, turma, nascimento, ignorarId = null) {
+function leitorExiste(nome, turno, turma, nascimento) {
   return cacheLeitores.some(
     (l) =>
-      l.id !== ignorarId &&
       normalizarTexto(l.nome) === normalizarTexto(nome) &&
       l.turno === turno &&
       l.turma === turma &&
@@ -806,8 +759,6 @@ function leitorExiste(nome, turno, turma, nascimento, ignorarId = null) {
 
 document.getElementById("form-registrar-leitor").addEventListener("submit", async (e) => {
   e.preventDefault();
-
-  await garantirLeitores();
 
   const nome = nomeLeitorEl.value.trim();
   const turno = turnoLeitorEl.value;
@@ -839,11 +790,6 @@ document.getElementById("form-registrar-leitor").addEventListener("submit", asyn
       nascimento
     });
 
-    const secLista = document.getElementById("secao-lista-leitores");
-    if (secLista.style.display !== "none") {
-      filtrarLeitores();
-    }
-
     showToast(`Leitor "${nome}" registrado!`, "success");
     e.target.reset();
     turmaLeitorEl.innerHTML = "<option value=''>Selecione...</option>";
@@ -864,18 +810,11 @@ function atualizarTurmasFiltroLeitores() {
   preencherTurmasSelect(selectTurmaFiltro, selectTurnoFiltro.value, "Selecione...");
 }
 
-async function carregarLeitores(forcar = false) {
-  if (!forcar && leitoresCarregados) {
-    const leitores = [...cacheLeitores].sort((a, b) =>
-      a.nome.localeCompare(b.nome, "pt", { sensitivity: "base" })
-    );
-    exibirLeitoresRegistrados(leitores);
-    return;
+async function carregarLeitores() {
+  if (!cacheLeitores.length) {
+    const snap = await getDocs(collection(db, "leitores"));
+    cacheLeitores = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
   }
-
-  const snap = await getDocs(collection(db, "leitores"));
-  cacheLeitores = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-  leitoresCarregados = true;
 
   const leitores = [...cacheLeitores].sort((a, b) =>
     a.nome.localeCompare(b.nome, "pt", { sensitivity: "base" })
@@ -937,8 +876,8 @@ function criarTabelaLeitores(leitores) {
         try {
           await deleteDoc(doc(db, "leitores", L.id));
           cacheLeitores = cacheLeitores.filter((l) => l.id !== L.id);
-          filtrarLeitores();
-          showToast(`Leitor "${L.nome}" removido!`, "success");
+          showToast(`Leitor "${L.nome}" removido!`, "success", 5000, true);
+          await carregarLeitores();
         } catch (err) {
           showToast("Erro: " + err.message, "error");
         }
@@ -1022,8 +961,6 @@ turnoEmprestimoEl.addEventListener("change", () => {
 });
 
 nomeEmprestimoEl.addEventListener("click", async () => {
-  await garantirLeitores();
-
   const turno = turnoEmprestimoEl.value;
   const turma = turmaEmprestimoEl.value;
 
@@ -1074,8 +1011,6 @@ nomeEmprestimoEl.addEventListener("click", async () => {
 });
 
 livroEmprestimoEl.addEventListener("click", async () => {
-  await garantirLivros();
-
   abrirDialogoSelecionar("Selecionar Livro", (filtro) => {
     const livros = cacheLivros.filter((l) => {
       const f = normalizarTexto(filtro);
@@ -1117,8 +1052,6 @@ livroEmprestimoEl.addEventListener("click", async () => {
 document.getElementById("form-registrar-emprestimo").addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  await garantirEmprestimos();
-
   const turno = turnoEmprestimoEl.value;
   const turma = turmaEmprestimoEl.value;
   const nomeLeitor = nomeEmprestimoEl.value.trim();
@@ -1156,19 +1089,11 @@ document.getElementById("form-registrar-emprestimo").addEventListener("submit", 
       ...emprestimoData
     });
 
-    const secListaEmprestimos = document.getElementById("secao-lista-emprestimos");
-    if (secListaEmprestimos.style.display !== "none") {
-      await carregarEmprestimos();
-    }
-
-    const secNotificacoes = document.getElementById("secao-notificacoes");
-    if (secNotificacoes.style.display !== "none") {
-      await carregarNotificacoes();
-    }
-
     showToast(`Empréstimo de "${livroSelecionado}" registrado!`, "success");
     e.target.reset();
     turmaEmprestimoEl.innerHTML = "<option value=''>Selecione...</option>";
+    await carregarEmprestimos();
+    await carregarNotificacoes();
   } catch (err) {
     showToast("Erro ao registrar empréstimo: " + err.message, "error");
   }
@@ -1292,18 +1217,9 @@ formAdicionarDias.addEventListener("submit", async (e) => {
     }
 
     fecharDialogAdicionarDias();
-
-    const secListaEmprestimos = document.getElementById("secao-lista-emprestimos");
-    if (secListaEmprestimos.style.display !== "none") {
-      await carregarEmprestimos();
-    }
-
-    const secNotificacoes = document.getElementById("secao-notificacoes");
-    if (secNotificacoes.style.display !== "none") {
-      await carregarNotificacoes();
-    }
-
     showToast(`Prazo atualizado com sucesso! Nova entrega: ${novaEntrega}`, "success");
+    await carregarEmprestimos();
+    await carregarNotificacoes();
   } catch (err) {
     showToast("Erro ao atualizar prazo: " + err.message, "error");
   }
@@ -1375,18 +1291,9 @@ function criarTabelaEmprestimos(emprestimos) {
       try {
         await deleteDoc(doc(db, "emprestimos", e.id));
         cacheEmprestimos = cacheEmprestimos.filter((x) => x.id !== e.id);
-
-        const secListaEmprestimos = document.getElementById("secao-lista-emprestimos");
-        if (secListaEmprestimos.style.display !== "none") {
-          await carregarEmprestimos();
-        }
-
-        const secNotificacoes = document.getElementById("secao-notificacoes");
-        if (secNotificacoes.style.display !== "none") {
-          await carregarNotificacoes();
-        }
-
-        showToast(`Empréstimo de "${e.livro}" entregue!`, "success");
+        showToast(`Empréstimo de "${e.livro}" entregue!`, "success", 5000, true);
+        await carregarEmprestimos();
+        await carregarNotificacoes();
       } catch (err) {
         showToast("Erro: " + err.message, "error");
       }
@@ -1423,19 +1330,12 @@ function criarTabelaEmprestimos(emprestimos) {
   return tabela;
 }
 
-async function carregarEmprestimos(forcar = false) {
-  if (!forcar && emprestimosCarregados) {
-    renderEmprestimosTabela();
-    return;
+async function carregarEmprestimos() {
+  if (!cacheEmprestimos.length) {
+    const snap = await getDocs(collection(db, "emprestimos"));
+    cacheEmprestimos = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
   }
 
-  const snap = await getDocs(collection(db, "emprestimos"));
-  cacheEmprestimos = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-  emprestimosCarregados = true;
-  renderEmprestimosTabela();
-}
-
-function renderEmprestimosTabela() {
   const turno = turnoEmprestimoFiltroEl.value;
   const turma = turmaEmprestimoFiltroEl.value;
   const termo = normalizarTexto(pesquisaEmprestimosEl.value);
@@ -1540,14 +1440,9 @@ function criarTabelaNotificacoes(emprestimos) {
       try {
         await deleteDoc(doc(db, "emprestimos", emp.id));
         cacheEmprestimos = cacheEmprestimos.filter((e) => e.id !== emp.id);
-
-        const secListaEmprestimos = document.getElementById("secao-lista-emprestimos");
-        if (secListaEmprestimos.style.display !== "none") {
-          await carregarEmprestimos();
-        }
-
+        showToast(`Empréstimo de "${emp.livro}" por "${emp.nome}" finalizado!`, "success", 5000, true);
+        await carregarEmprestimos();
         await carregarNotificacoes();
-        showToast(`Empréstimo de "${emp.livro}" por "${emp.nome}" finalizado!`, "success");
       } catch (err) {
         showToast("Erro: " + err.message, "error");
       }
@@ -1583,7 +1478,9 @@ function criarTabelaNotificacoes(emprestimos) {
 }
 
 async function carregarNotificacoes() {
-  await garantirEmprestimos();
+  if (!cacheEmprestimos.length) {
+    await carregarEmprestimos();
+  }
 
   const notificaveis = cacheEmprestimos.filter((e) => {
     const d = parseDataBR(e.dataEntrega);
@@ -1661,9 +1558,9 @@ async function virarAnoLetivo() {
     return;
   }
 
-  await garantirLeitores();
+  const snap = await getDocs(collection(db, "leitores"));
+  const leitores = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 
-  const leitores = [...cacheLeitores];
   await criarBackupLeitores(leitores);
 
   let total = 0;
@@ -1684,20 +1581,13 @@ async function virarAnoLetivo() {
       });
 
       await updateDoc(doc(db, "leitores", leitor.id), novo);
-
-      const idx = cacheLeitores.findIndex((l) => l.id === leitor.id);
-      if (idx !== -1) {
-        cacheLeitores[idx] = {
-          ...cacheLeitores[idx],
-          ...novo
-        };
-      }
     }
   }
 
   await registrarLogAnoLetivo(total, listaMovidos);
-  filtrarLeitores();
-  showToast(`🎓 Ano letivo atualizado! Alunos movidos: ${total}`, "success");
+  await carregarLeitores();
+
+  showToast(`🎓 Ano letivo atualizado! Alunos movidos: ${total}`, "success", 5000, true);
 }
 
 async function restaurarUltimoBackup() {
@@ -1724,10 +1614,9 @@ async function restaurarUltimoBackup() {
     await setDoc(doc(db, "leitores", leitor.id), leitor);
   }
 
-  cacheLeitores = backup.map((l) => ({ ...l }));
-  leitoresCarregados = true;
-  filtrarLeitores();
-  showToast("♻️ Backup restaurado com sucesso!", "success");
+  cacheLeitores = [];
+  await carregarLeitores();
+  showToast("♻️ Backup restaurado com sucesso!", "success", 5000, true);
 }
 
 async function gerarRelatorioPDF() {
@@ -1853,4 +1742,8 @@ window.addEventListener("load", async () => {
   });
 
   await carregarGeneros();
+  await carregarLivros();
+  await carregarLeitores();
+  await carregarEmprestimos();
+  await carregarNotificacoes();
 });
